@@ -1,0 +1,34 @@
+---
+# natinstance instance
+natinstance:
+  ami_id: "ami-d440a6e7"
+  ansible_group: nat
+  ansible_group_running: deploy-nat
+  assign_public_ip: yes
+  exact_count: "1"
+  groups: "nat_inbound"
+  inbound_rules:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: {{ vault.ip }}/32
+  inbound_rules_name:
+    Name: "nat_inbound"
+    Organization: b_dev
+    Environment: aws
+  instance_tags:
+    Name: "natinstance"
+    Organization: b_dev
+    Environment: aws
+    Role: nat
+  instance_tags_deploy:
+    Created: deploy
+  instance_type: "t2.small"
+  private_ip: "10.148.0.10"
+  state: "running"
+  subnet: "aws-dmz"
+  wait: yes
+  volumes:
+    - device_name: /dev/sda1
+      volume_size: 8
+      delete_on_termination: yes

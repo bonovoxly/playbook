@@ -1,0 +1,26 @@
+---
+# tasks file for localhost.verifyssh
+- name: Specify fingerprint to search for.
+  set_fact:
+    fact_ssh_fingerprint: "{{ ROLE }}_ssh_fingerprint"
+  when: fact_Increment != 0
+
+- name: SSH key scan. Errors if we don't find it.
+  shell: "ssh-keyscan {{ fact_instance_info.tagged_instances.0.public_ip }}| grep '{{ hostvars[groups['localhost'][0]][fact_ssh_fingerprint] }}'"
+  register: fact_ssh_keyscan_info
+  failed_when: fact_ssh_keyscan_info.stdout.strip() == ""
+
+- name: Debug
+  debug:
+    var: "{{ fact_ssh_keyscan_info.stdout }}"
+
+- name: Import SSH key if key matches.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    line: "{{ fact_ssh_keyscan_info.stdout }} # {{ ami_instance_tags.Name }}"
+
+- name: Add to local host group (in memory).
+  add_host:
+    #ansible_ssh_private_key_file: "{{ fact_instance_info.tagged_instances.0.private_ip }}"
+    groups: "{{ ami_instance_tags.Name }}"
+    hostname: "{{ fact_instance_info.tagged_instances.0.public_ip }}"

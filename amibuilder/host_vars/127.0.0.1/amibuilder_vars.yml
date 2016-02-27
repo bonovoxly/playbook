@@ -1,0 +1,33 @@
+---
+acceptable_roles:
+  - nginx
+
+# SSH key and fingerprint information
+base_ssh_fingerprint: "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBPb9s6Ef7ThwiYPsdqmS4VdC/ofeaJco+SfPDgk/qFqkmM3tFOEnRZaxOP1S0vFazMdXK9y6M3HCEj95Da3U2yk="
+generic_ssh_fingerprint: ""
+nginx_ssh_fingerprint: "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBTnnHG3wFomDHdYl0LtKD0R4ObizdY5sMIhNfUvy1AtoyqpHsGxbQ433xBpYGcmcoME6zWgCAmC24ic+E8Iru4="
+
+# SSH fingerprint defaults.
+fact_ssh_fingerprint: 'base_ssh_fingerprint'
+
+
+# ami settings
+ami_base_Name: "base"
+ami_base_Role: "base"
+ami_key_name: 'b_dev_demo'
+ami_image_type: "t2.micro"
+ami_instance_tags:
+  Name: "amibuilder_{{ROLE}}"
+  Role: "amibuilder"
+ami_prefix: "staging"
+ami_security_groups:
+  - "ssh_inbound"
+ami_subnet: "subnet-66d2ab03"
+ami_volumes:
+  - device_name: /dev/sda1
+    volume_size: 8
+    delete_on_termination: yes
+assign_public_ip: yes
+
+# Increment defaults.
+fact_Increment: 0

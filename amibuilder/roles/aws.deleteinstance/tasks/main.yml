@@ -1,0 +1,14 @@
+---
+# tasks file for aws.deleteinstance
+- name: Delete instance.
+  ec2:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    instance_id: "{{ fact_instance_info.tagged_instances.0.id }}"
+    state: "absent"
+    vpc_subnet_id: "{{ ami_subnet }}"
+    wait: "yes"
+  register: r_delete_instance_info
+  tags:
+    - instance

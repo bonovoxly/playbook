@@ -1,0 +1,93 @@
+---
+# tasks file for aws.createinstance
+- name: Find AMI. Sort descending to get the last iteration count.
+  ec2_ami_find:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    owner: self
+    ami_tags:
+      Name: "{{ ami_prefix }}_{{ ROLE }}"
+      Role: "{{ ROLE }}"
+    sort: tag
+    sort_tag: Increment
+    sort_order: descending
+    no_result_action: success
+  register: fact_ami_info
+
+- name: Set Increment IF custom AMI already exists.
+  set_fact:
+    fact_Increment: "{{ fact_ami_info.results.0.tags.Increment | int + 1 }}"
+  when: fact_ami_info.results.0 is defined
+
+- name: Specify fingerprint to search for.
+  set_fact:
+    fact_ssh_fingerprint: "{{ ROLE }}_ssh_fingerprint"
+  when: fact_Increment != 0
+
+- name: Get the first role AMI.  All incremented versions of the AMI are based off of the 0 version.
+  ec2_ami_find:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    ami_tags:
+      Name: "{{ ami_prefix }}_{{ ROLE }}"
+      Role: "{{ ROLE }}"
+      Increment: '0'
+    no_result_action: success
+    owner: self
+    sort: tag
+    sort_tag: Increment
+  register: fact_ami_info
+  when: fact_ami_info.results.0 is defined
+
+- name: Find the base AMI.
+  ec2_ami_find:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    ami_tags:
+      Name: "{{ ami_base_Name }}"
+      Role: "{{ ami_base_Role }}"
+    no_result_action: fail
+    owner: self
+    sort_tag: Increment
+    sort_order: descending
+  register: fact_base_ami_info
+
+- name: Set fact AMI to use.
+  set_fact:
+    fact_ami_selected: "{{ fact_ami_info.results.0.ami_id if fact_ami_info.results is defined else fact_base_ami_info.results.0.ami_id }}"
+
+- name: debug.
+  debug:
+    msg: "Using AMI ID: {{ fact_ami_selected }}"
+
+- name: Create instance.
+  ec2:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    assign_public_ip: "{{ assign_public_ip }}"
+    count_tag:
+      Name: "{{ ami_instance_tags.Name }}"
+    exact_count: "1"
+    group: "{{ ami_security_groups }}"
+    key_name: "{{ ami_key_name }}"
+    instance_tags: "{{ ami_instance_tags }}"
+    image: "{{ fact_ami_selected }}"
+    instance_type: "{{ ami_image_type }}"
+    volumes: "{{ ami_volumes }}"
+    vpc_subnet_id: "{{ ami_subnet }}"
+    wait: "yes"
+  register: fact_instance_info
+
+- name: Debug instance.
+  debug:
+    msg: "{{ fact_instance_info.tagged_instances.0 }}"
+
+- name: Wait for instance to start up...  timeout of 3 minutes.
+  wait_for:
+    host: "{{ fact_instance_info.tagged_instances.0.public_ip if assign_public_ip == 'yes' else fact_instance_info.tagged_instances.0.public_ip }}"
+    port: 22
+    timeout: 210

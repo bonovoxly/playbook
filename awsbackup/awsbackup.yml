@@ -1,0 +1,32 @@
+# file: amibuilder.yml
+#
+# This playbook requires an Ansible vault file.  In this case, it
+# is stored in group_vars/all/vault.yml. Variables required are as follows:
+# vault:
+#   aws_secret_key: your_aws_secret_key
+#   aws_access_key: your aws_access_key
+#   region: your region
+#
+# This playbook also requies the "ec2_snapshot_facts.py" Ansible module in the
+# library directory.  Props to wimnat:
+# https://github.com/wimnat/ansible-modules-extras/blob/feature/ec2_snapshot_facts/cloud/amazon/ec2_snapshot_facts.py
+#
+---
+#####
+# AWS initialization and instance creation.
+#####
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  any_errors_fatal: true
+
+  pre_tasks:
+    - name: Default to 3 snapshots if COUNT is not defined.
+      set_fact:
+        COUNT: "{{ default_count }}"
+      when: COUNT is not defined
+
+  roles:
+    - aws.takesnapshots
+    # - aws.findsnapshots
+    # - aws.deletesnapshots

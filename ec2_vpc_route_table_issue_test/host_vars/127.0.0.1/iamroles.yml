@@ -1,0 +1,6 @@
+---
+# Lobar Associates IAM roles
+la_roles:
+  - iam_type: role
+    iam_name: natinstance_role
+    state: present

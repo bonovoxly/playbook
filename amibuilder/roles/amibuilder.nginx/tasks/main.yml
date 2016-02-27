@@ -1,0 +1,15 @@
+---
+# tasks file for amibuilder.nginx
+- name: Update all packages.
+  package:
+    name: '*'
+    state: 'latest'
+- name: Install EPEL.
+  package:
+    name: 'epel-release'
+    state: 'latest'
+
+- name: Install nginx.
+  package:
+    name: 'nginx'
+    state: 'latest'

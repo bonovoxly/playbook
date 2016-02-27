@@ -1,0 +1,25 @@
+---
+# tasks file for amibuilder.deletesshkeys
+- name: Delete SSH host keys
+  shell: 'rm -f ssh_host_*'
+  args:
+    chdir: "/etc/ssh"
+  when: hostvars['127.0.0.1']['fact_ami_selected'] == hostvars['127.0.0.1']['fact_base_ami_info']['results'][0]['ami_id']
+
+- name: Restart SSH.
+  service:
+        name: "sshd"
+        state: "restarted"
+  when: hostvars['127.0.0.1']['fact_ami_selected'] == hostvars['127.0.0.1']['fact_base_ami_info']['results'][0]['ami_id']
+
+- name: Get SSH fingerprint fact.
+  shell: "ssh-keyscan localhost | grep ecdsa-sha2-nistp256"
+  register: r_new_ssh_fingerpint_info
+
+- name: Remove old temporary hosts.
+  become: false
+  local_action: lineinfile dest='~/.ssh/known_hosts' line="^.*{{ hostvars['127.0.0.1']['ami_instance_tags']['Name'] }}"
+
+- name: Clear whitespace.
+  become: false
+  local_action: shell sed -i -e '/^\s*$/d' ~/.ssh/known_hosts

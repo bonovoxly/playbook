@@ -1,0 +1,16 @@
+---
+# tasks file for amibuilder.cleanup
+- name: Remove Bash history.
+  file:
+    path: "/home/{{ ansible_env.USER }}/.bash_history"
+    state: "absent"
+
+- name: Remove root Bash history.
+  file:
+    path: "/root/.bash_history"
+    state: "absent"
+
+- name: Clean log files.
+  shell: 'find . -type f -exec cp /dev/null {} \;'
+  args:
+    chdir: "/var/log"

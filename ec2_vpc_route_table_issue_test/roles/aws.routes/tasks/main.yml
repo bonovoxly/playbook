@@ -1,0 +1,130 @@
+---
+# tasks file for aws.routes
+- name: Ensure that the VPC has an Internet Gateway.
+  ec2_vpc_igw:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    state: present
+    vpc_id: "{{ vpc_results.vpc_id }}"
+  register: igw_results
+  tags:
+    - AWS
+    - Network
+    - Routing
+
+- name: Get private routing table.
+  ec2_vpc_route_table_facts:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    filters:
+      "tag:Name": "{{ vpc_vars.private_route.resource_tags.Name }}"
+  register: private_route_facts
+
+- name: Get public routing table.
+  ec2_vpc_route_table_facts:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    filters:
+      "tag:Name": "{{ vpc_vars.public_route.resource_tags.Name }}"
+  register: public_route_facts
+
+# - name: Create temporary private route.
+#   ec2_vpc_route_table:
+#     aws_secret_key: "{{ vault.aws_secret_key }}"
+#     aws_access_key: "{{ vault.aws_access_key }}"
+#     region: "{{ vpc_vars.region }}"
+#     routes:
+#       - dest: "{{ vpc_vars.private_route.routes.dest }}"
+#         instance_id: "{{ nat_instance_results.tagged_instances.0.id }}"
+#     state: present
+#     subnets: "{{ vpc_results.subnets|selectattr('resource_tags.Route', 'equalto', 'private')|map(attribute='cidr')|join(',') }}"
+#     tags:
+#       Name: TEMPORARY
+#     vpc_id: "{{ vpc_results.vpc_id }}"
+#   tags:
+#     - AWS
+#     - Network
+#     - Routing
+#   when: private_route_facts.route_tables.0.routes.1.instance_id == "" or private_route_facts.route_tables.0.routes.1.instance_id is none
+
+# - name: Delete route table if the route is none.
+#   ec2_vpc_route_table:
+#     aws_secret_key: "{{ vault.aws_secret_key }}"
+#     aws_access_key: "{{ vault.aws_access_key }}"
+#     region: "{{ vpc_vars.region }}"
+#     lookup: id
+#     route_table_id: "{{ private_route_facts.route_tables.0.id }}"
+#     state: absent
+#     vpc_id: "{{ vpc_results.vpc_id }}"
+#   tags:
+#     - AWS
+#     - Network
+#     - Routing
+#   when: private_route_facts.route_tables.0.routes.1.instance_id == "" or private_route_facts.route_tables.0.routes.1.instance_id is none
+#
+# - name: debug
+#   debug:
+#     msg: "{{ private_route_facts }}"
+#
+# - name: debug
+#   debug:
+#     msg: "{{ public_route_facts }}"
+
+- name: debug
+  debug:
+    msg: "{{nat_instance_results.tagged_instances.0.id}} "
+
+- name: Create private route.
+  ec2_vpc_route_table:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    state: present
+    subnets: "{{ vpc_results.subnets|selectattr('resource_tags.Route', 'equalto', 'private')|map(attribute='cidr')|join(',') }}"
+    # subnets: "{{ vpc_vars.private_route.subnets }}"
+    routes:
+      - dest: "{{ vpc_vars.private_route.routes.dest }}"
+        instance_id: "{{ nat_instance_results.tagged_instances.0.id }}"
+    tags: "{{ vpc_vars.private_route.resource_tags }}"
+    vpc_id: "{{ vpc_results.vpc_id }}"
+  tags:
+    - AWS
+    - Network
+    - Routing
+  register: private_route_results
+
+# - name: Delete temporary route table.
+#   ec2_vpc_route_table:
+#     aws_secret_key: "{{ vault.aws_secret_key }}"
+#     aws_access_key: "{{ vault.aws_access_key }}"
+#     region: "{{ vpc_vars.region }}"
+#     state: absent
+#     tags:
+#       Name: TEMPORARY
+#     vpc_id: "{{ vpc_results.vpc_id }}"
+#   tags:
+#     - AWS
+#     - Network
+#     - Routing
+#   when: private_route_facts.route_tables.0.routes.1.instance_id == "" or private_route_facts.route_tables.0.routes.1.instance_id is none
+
+- name: Create public route.
+  ec2_vpc_route_table:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    state: present
+    subnets: "{{ vpc_results.subnets|selectattr('resource_tags.Route', 'equalto', 'public')|map(attribute='cidr')|join(',') }}"
+    routes:
+      - dest: "{{ vpc_vars.public_route.routes.dest }}"
+        gateway_id: "{{ igw_results.gateway_id }}"
+    tags: "{{vpc_vars.public_route.resource_tags }}"
+    vpc_id: "{{ vpc_results.vpc_id }}"
+  tags:
+    - AWS
+    - Network
+    - Routing
+  register: public_route_results

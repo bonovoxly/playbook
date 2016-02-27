@@ -1,0 +1,55 @@
+---
+# tasks file for aws.instances.nat
+- name: Create nat inbound rules.
+  ec2_group:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    description: "{{ nat_vars.instance_tags.Name }} inbound rules"
+    name: "{{ nat_vars.inbound_rules_name.Name }}"
+    rules: "{{ nat_vars.inbound_rules }}"
+    vpc_id: "{{ vpc_results.vpc_id }}"
+  register: nat_inbound_results
+  tags:
+    - AWS
+    - security_groups
+    - nat
+
+- name: Tag nat inbound traffic rules.
+  ec2_tag:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    resource: "{{ nat_inbound_results.group_id }}"
+    state: present
+    tags: "{{ nat_vars.inbound_rules_name }}"
+  tags:
+    - AWS
+    - security_groups
+    - nat
+
+- name: Create nat instance.
+  ec2:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc_vars.region }}"
+    count_tag:
+      Name: "{{ nat_vars.instance_tags.Name }}"
+    exact_count: "{{ nat_vars.exact_count }}"
+    group: "{{ nat_vars.groups }}"
+    key_name: "{{ vault.key_pair }}"
+    instance_profile_name: "natinstance_role"
+    instance_tags: "{{ nat_vars.instance_tags }}"
+    image: "{{ nat_vars.ami_id }}"
+    instance_type: "{{ nat_vars.instance_type }}"
+    private_ip: "{{ nat_vars.private_ip }}"
+    source_dest_check: no
+    termination_protection: no
+    volumes: "{{ nat_vars.volumes }}"
+    vpc_subnet_id: "{{ vpc_results.subnets|selectattr('resource_tags.Name', 'equalto', nat_vars.subnet)|map(attribute='id')|join(',') }}"
+    wait: "{{ nat_vars.wait }}"
+  register: nat_instance_results
+  tags:
+    - AWS
+    - instance
+    - nat

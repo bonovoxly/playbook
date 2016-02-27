@@ -1,0 +1,48 @@
+---
+# tasks file for aws.createami
+- name: Stop instance.
+  ec2:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    instance_ids: "{{ fact_instance_info.tagged_instances.0.id }}"
+    state: "stopped"
+    wait: "yes"
+  tags:
+     - instance
+
+- name: Get AMI name.
+  set_fact:
+    fact_ami_name: "{{ ami_prefix }}_{{ ROLE }}_{{ fact_Increment }}"
+  with_items: "{{ ami_instance_tags.Name }}"
+  when: fact_ami_name is not defined
+
+- name: Create AMI name dictionary.
+  set_fact:
+    fact_name_tag: {"Name": "{{ ami_prefix }}_{{ ROLE }}"}
+    fact_role_tag: {"Role": "{{ ROLE }}"}
+    fact_increment_tag: {"Increment": "{{ fact_Increment }}"}
+  with_items: "{{ ami_instance_tags.Name }}"
+
+- name: Set fact - union the new AMI name with the tags.
+  set_fact:
+    fact_ami_tag_list: "{{ fact_name_tag | combine(fact_role_tag) | combine(fact_increment_tag) }}"
+  with_items: "{{ ami_instance_tags.Name }}"
+
+- name: DEBUG.
+  debug:
+    msg: "{{ fact_ami_tag_list }}"
+
+- name: Create AMI.
+  ec2_ami:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    instance_id: "{{ fact_instance_info.tagged_instances.0.id }}"
+    name: "{{ ami_prefix }}_{{ ROLE }}_{{ fact_Increment }}"
+    # If you share AMIs to other accounts, create the list and they will be automatically shared.
+    # launch_permissions:
+    #   user_ids: "{{ account_share_list }}"
+    tags: "{{ fact_ami_tag_list }}"
+    wait: "yes"
+    wait_timeout: 900

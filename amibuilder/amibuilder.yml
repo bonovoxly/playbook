@@ -1,0 +1,77 @@
+# file: amibuilder.yml
+#
+# This playbook requires an Ansible vault file.  In this case, it
+# is stored in group_vars/all/vault.yml. Variables required are as follows:
+# vault:
+#   aws_secret_key: your_aws_secret_key
+#   aws_access_key: your aws_access_key
+#   region: your region
+#   ansible_ssh_key_file: "{{ ansible_env.HOME }}/.ssh/private_key"
+#   ansible_ssh_key_contents: |
+#     -----BEGIN RSA PRIVATE KEY-----
+#     yoursshkey
+#     contents
+#     -----END RSA PRIVATE KEY-----
+#
+---
+#####
+# AWS initialization and instance creation.
+#####
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  any_errors_fatal: true
+
+  pre_tasks:
+    - name: Fail if ROLE is not defined in host_vars/127.0.0.1/ami_builder.yml.
+      fail:
+        msg: "ROLE needed. In this demo, we use nginx.  See host_vars/127.0.0.1."
+      when: ROLE is not defined or ROLE not in acceptable_roles
+
+    - name: Ensure .ssh directory exists.
+      file:
+        dest: "{{ vault.ansible_ssh_key_file | dirname }}"
+        mode: 0700
+        owner: "{{ ansible_ssh_user }}"
+        state: directory
+
+    - name: Install ssh key
+      copy:
+        content: "{{ vault.ansible_ssh_key_contents }}"
+        dest: "{{ vault.ansible_ssh_key_file }}"
+        mode: 0600
+        owner: "{{ ansible_ssh_user }}"
+
+  roles:
+    - aws.createinstance
+    - localhost.verifyssh
+
+#####
+# generic AMI build
+#####
+- hosts: "amibuilder_nginx" # THIS MUST BE EQUAL to "{{ami_instance_tags.Name}}"
+  become: yes
+  remote_user: centos
+  gather_facts: yes
+
+  roles:
+    - amibuilder.nginx
+    - amibuilder.cleanup
+    - amibuilder.deletesshkeys
+
+#####
+# final cleanup steps on localhost
+#####
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  any_errors_fatal: true
+
+  roles:
+    - aws.createami
+    - aws.deleteinstance
+
+  post_tasks:
+    - name: Print SSH keyscan result. Save this to amibuilder_vars.yml.
+      debug:
+        msg: "{{ hostvars[hostvars['127.0.0.1']['fact_instance_info']['tagged_instances'][0]['public_ip']]['r_new_ssh_fingerpint_info']['stdout'] }}"
