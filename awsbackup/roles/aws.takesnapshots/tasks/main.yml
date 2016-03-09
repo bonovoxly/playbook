@@ -1,21 +1,14 @@
 ---
 # tasks file for aws.takesnapshots
-- name: Find instances to backup.
-  ec2_remote_facts:
+- name: Snapshot the instance.
+  ec2_snapshot:
     aws_secret_key: "{{ vault.aws_secret_key }}"
     aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vault.region }}"
-    filters:
-      "tag:backup": 'yes'
-  register: ec2_facts
-
-- name: Print instance IDs.
-  debug:
-    msg: "{{ ec2_facts }}"
-
-- name: Snapshot the instance.
-  ec2_snapshot:
-    instance_id: "{{ item }}"
-    device_name: /dev/sdb1
-    description: snapshot of /data from DB123 taken 2013/11/28 12:18:32
-  with_items: "{{}}"
+    instance_id: "{{ item.id }}"
+    device_name: "{{ item.root_device_name }}"
+    description: "awsbackup snapshot taken on {{ ansible_date_time.date }} at {{ ansible_date_time.time }}"
+    snapshot_tags:
+      Name: "{{ item.tags.Name }}_daily_{{ ansible_date_time.date }}"
+      identifier: awsbackup
+  with_items: "{{ ec2_facts.instances }}"
