@@ -27,6 +27,7 @@
       when: COUNT is not defined
 
   roles:
-    - aws.takesnapshots
-    # - aws.findsnapshots
+    - aws.facts
+    # - aws.takesnapshots
+    - aws.findsnapshots
     # - aws.deletesnapshots
