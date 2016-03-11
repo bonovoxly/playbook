@@ -31,7 +31,7 @@
   debug:
     msg: "{{ snaps_joined_register.results[-1].ansible_facts.snaps_joined }}"
 
-- name: Delete snapshots in the nsted list of snapshots.
+- name: Delete snapshots in the nested list of snapshots.
   ec2_snapshot:
     aws_secret_key: "{{ vault.aws_secret_key }}"
     aws_access_key: "{{ vault.aws_access_key }}"
