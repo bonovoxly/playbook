@@ -1,2 +1,47 @@
 ---
 # tasks file for aws.deletesnapshots
+- name: Get ordered list of snapshots for each instance.
+  set_fact:
+    snaps_to_delete_fact_list:  "{{ ec2_snapshot_facts.snapshots|selectattr('tags.identifier', 'equalto', 'awsbackup')|selectattr('tags.instance', 'equalto', item.tags.Name)|sort(attribute='start_time')|reverse|map(attribute='id')|list }}"
+  with_items: ec2_facts.instances
+  register: snaps_to_delete_fact_list_register
+
+- name: Cut the list by our COUNT variable.
+  set_fact:
+    snaps_cut: "{{ item.ansible_facts['snaps_to_delete_fact_list'][COUNT:] }}"
+  with_items: snaps_to_delete_fact_list_register.results
+  register: snaps_cut_register
+
+- name: Debug debug cut list.
+  debug:
+    msg: "{{ item.ansible_facts.snaps_cut }}"
+  with_items: snaps_cut_register.results
+
+- name: Create empty list for joins.
+  set_fact:
+    snaps_joined: "[]"
+
+- name: Join the nested list of snapshots that will be deleted.
+  set_fact:
+    snaps_joined: "{{ snaps_joined }} + {{ item.ansible_facts.snaps_cut }}"
+  with_items: snaps_cut_register.results
+  register: snaps_joined_register
+
+- name: Debug joined list.
+  debug:
+    msg: "{{ snaps_joined_register.results[-1].ansible_facts.snaps_joined }}"
+
+- name: Delete snapshots in the nsted list of snapshots.
+  ec2_snapshot:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vault.region }}"
+    state: absent
+    snapshot_id: "{{ item }}"
+  with_items: snaps_joined_register.results[-1].ansible_facts.snaps_joined
+  register: deleted_snapshots
+
+- name: Debug snapshots that were deleted.
+  debug:
+    msg: "{{ item.item }}"
+  with_items: deleted_snapshots.results

@@ -28,6 +28,6 @@
 
   roles:
     - aws.facts
-    # - aws.takesnapshots
+    - aws.takesnapshots
     - aws.findsnapshots
-    # - aws.deletesnapshots
+    - aws.deletesnapshots

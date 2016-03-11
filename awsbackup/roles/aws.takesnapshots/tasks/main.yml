@@ -11,4 +11,5 @@
     snapshot_tags:
       Name: "{{ item.tags.Name }}_daily_{{ ansible_date_time.date }}"
       identifier: awsbackup
+      instance: "{{ item.tags.Name }}"
   with_items: "{{ ec2_facts.instances }}"
