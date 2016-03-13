@@ -16,15 +16,7 @@ The Ansible vault file is kept under ```group_vars/all/vault.yml```.  It has the
 vault:
   aws_secret_key: SECRET_KEY
   aws_access_key: ACCESS_KEY
-  ansible_ssh_key_file: "{{ ansible_env.HOME }}/.ssh/keyfile"
-  ansible_ssh_key_contents: |
-    -----BEGIN RSA PRIVATE KEY-----
-    KEYDATA
-    -----END RSA PRIVATE KEY-----
 ```
-
-Embedding the SSH key in the Ansible Vault keeps the entire project very modular.
-
 
 # AWS policy
 
