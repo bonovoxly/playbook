@@ -26,6 +26,11 @@
         COUNT: "{{ default_count }}"
       when: COUNT is not defined
 
+    - name: Verify incremental type (daily, weekly, monthly)
+      fail:
+        msg: "INCREMENTAL is not defined.  Allowed values are daily, weekly, or monthly.  Exiting."
+      when: INCREMENTAL is not defined or INCREMENTAL != 'daily' and INCREMENTAL != 'weekly' and INCREMENTAL != 'monthly'
+
   roles:
     - aws.facts
     - aws.takesnapshots

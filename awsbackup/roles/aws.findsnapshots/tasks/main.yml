@@ -1,12 +1,13 @@
 ---
 # tasks file for aws.findsnapshots
-- name: Get snapshots
+- name: Find snapshots.
   ec2_snapshot_facts:
     aws_secret_key: "{{ vault.aws_secret_key }}"
     aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vault.region }}"
     filters:
       "tag:identifier": "awsbackup"
+      "tag:incremental": "{{ INCREMENTAL }}"
   register: ec2_snapshot_facts
 
 - name: Print snapshot facts

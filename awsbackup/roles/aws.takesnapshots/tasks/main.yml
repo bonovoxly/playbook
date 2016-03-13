@@ -9,7 +9,8 @@
     device_name: "{{ item.root_device_name }}"
     description: "awsbackup snapshot taken on {{ ansible_date_time.date }} at {{ ansible_date_time.time }}"
     snapshot_tags:
-      Name: "{{ item.tags.Name }}_daily_{{ ansible_date_time.date }}"
+      Name: "{{ item.tags.Name }}_{{ INCREMENTAL }}_{{ ansible_date_time.date }}"
       identifier: awsbackup
       instance: "{{ item.tags.Name }}"
+      incremental: "{{ INCREMENTAL }}"
   with_items: "{{ ec2_facts.instances }}"

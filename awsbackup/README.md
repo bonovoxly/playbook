@@ -5,7 +5,7 @@ This is both an awsbackup.yml playbook and the equivalent awsbackup.py python sc
 Example run:
 
 ```
-ansible-playbook -i inventory/localhost --vault-password-file ~/.ansible/vault_awsbackup awsbackup.yml -e "TAG=backup"
+ansible-playbook --vault-password-file ~/.ansible/myvaultpassword -i inventory/localhost awsbackup.yml -e "INCREMENTAL=daily COUNT=3"
 ```
 
 # ansible-vault
