@@ -1,0 +1,41 @@
+---
+# tasks file for aws.instances
+- name: Find AMIs for instances.
+  ec2_ami_find:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    ami_tags:
+      Role: "{{ item.value.image }}"
+    sort: name
+    sort_order: descending
+  register: instances_ami_facts
+  with_dict: aws_instances
+
+- name: debug
+  debug:
+    msg: "{{ instances_ami_facts }}"
+
+- name: Create instances.
+  ec2:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    count_tag:
+      Environment: "{{ item.value.instance_tags.Environment }}"
+      Name: "{{ item.value.instance_tags.Name }}"
+    exact_count: "{{ item.value.exact_count }}"
+    group: "{{ item.value.groups }}"
+    instance_tags: "{{ item.value.instance_tags }}"
+    image: "{{ instances_ami_facts.results|selectattr('results.0.tags.Role', 'equalto', item.value.image)|map(attribute='results.0.ami_id')|list|first }}"
+    instance_type: "{{ item.value.instance_type }}"
+    volumes: "{{ item.value.volumes }}"
+    vpc_subnet_id: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', item.value.subnet)|map(attribute='id')|list|first }}"
+    wait: "{{ item.value.wait }}"
+  register: instances_facts
+  with_dict: instance_vars
+
+- name: Wait 3 minutes for instances to start up.
+  pause:
+    seconds: 150
+  when: instances_facts.changed

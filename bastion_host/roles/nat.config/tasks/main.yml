@@ -1,0 +1,32 @@
+---
+# tasks file for nat.config
+- name: Upgrade all packages.
+  yum:
+    name: '*'
+    state: latest
+    update_cache: yes
+
+- name: Install iptables-service.
+  yum:
+    name: iptables-services
+    state: latest
+
+- name: Enable ip forwarding.
+  sysctl:
+    name: "{{ nat_vars.host_settings.ipv4_ip_forward }}"
+    value: 1
+    ignoreerrors: yes
+
+- name: Upload iptables template.
+  template:
+    src: files/templates/iptables.j2
+    dest: "/etc/sysconfig/iptables"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  with_items: nat_CIDR_vars
+
+- name: Reload iptables.
+  service:
+    name: iptables
+    state: restarted

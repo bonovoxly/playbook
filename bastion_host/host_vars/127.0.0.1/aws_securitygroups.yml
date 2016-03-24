@@ -1,0 +1,20 @@
+---
+securitygroups:
+  - Name: internal1_inbound
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 10.148.1.0/24
+    subnet: aws-internal
+  - Name: internal2_inbound
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 8009
+        to_port: 8009
+        cidr_ip: 10.148.1.0/32
+    subnet: aws-internal

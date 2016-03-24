@@ -1,0 +1,8 @@
+---
+# tasks file for instances.authorized_keys
+- name: Add users to user authorized_keys.
+  lineinfile:
+    dest: "/home/{{ vault_vars.admin_user }}/.ssh/authorized_keys"
+    line: "{{ item }}"
+  with_items: vault_vars.ssh_users
+  when: vault_vars.ssh_users is defined
