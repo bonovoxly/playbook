@@ -11,7 +11,7 @@
 
 - name: Set CIDR subnet fact.
   set_fact:
-    nat_CIDR: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='cidr_block')|list|first }}"
+    nat_CIDR_fact: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='cidr_block')|list|first }}"
 
 # NOTE.  IF YOU USE VIRGINIA, IT WILL BE EC2.INTERNAL, NOT COMPUTE.INTERNAL
 - name: Configure SSH proxy host.
@@ -19,7 +19,7 @@
     dest: "{{ ansible_env.HOME }}/.ssh/config"
     marker: "# {{ nat_vars.instance_tags.Organization }}"
     block: |
-      Host ip-{{ nat_CIDR.split('.')[0]}}-{{ nat_CIDR.split('.')[1]}}-*-*.compute.internal
+      Host ip-{{ nat_CIDR_fact.split('.')[0]}}-{{ nat_CIDR_fact.split('.')[1]}}-*-*.compute.internal
            ProxyCommand ssh -i ~/.ssh/{{ vault_vars.key_pair }} -W %h:%p -q centos@{{ nat_public_dns_facts_vars }}
            ServerAliveInterval 30
 
