@@ -16,9 +16,17 @@ The Ansible vault file is kept under ```host_vars/127.0.0.1/vault.yml```.  It ha
 
 ```
 vault:
+  admin_user: username
+  ami_ssh_fingerprint: "ecdsa-sha2-nistp256 blahblahblahblahfingerprint" # AMI fingerprint.  Needs to be manually retreived ahead of time.
   aws_secret_key: SECRET_KEY
   aws_access_key: ACCESS_KEY
-  ansible_ssh_key_file: "{{ ansible_env.HOME }}/.ssh/keyfile"
+  ip: 'your_remote_ip_address' # where you are connecting from
+  key_pair ssh_private_key_name # needs uploaded to AWS key pair
+  region: us-west-2 # or east or whereever
+  ssh_users: |
+    list of ssh public keys for users you want to provide access to
+  # SSH key infoconfiguration
+  ansible_ssh_key_file: "{{ ansible_env.HOME }}/.ssh/ssh_private_key_name"
   ansible_ssh_key_contents: |
     -----BEGIN RSA PRIVATE KEY-----
     KEYDATA
