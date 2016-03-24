@@ -27,9 +27,14 @@
     # Get AWS facts.  Needs a dictionary passed in as aws_fact_vars
     - role: aws.facts
       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+    - role: localhost.ssh_check
+      nat_public_dns_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_dns_name }}"
+      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+      ssh_knownhosts_vars: "{{ hostvars['127.0.0.1']['ssh_knownhosts'] }}"
     # Configure localhost SSH config
     - role: localhost.ssh_init
       ec2_facts_vars: "{{ hostvars['127.0.0.1']['ec2_facts'] }}"
+      nat_ami_awk_fingerprint_fact_vars: "{{ hostvars['127.0.0.1']['nat_ami_awk_fingerprint_fact']['stdout'] }}"
       nat_public_dns_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_dns_name }}"
       nat_public_ip_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_ip }}"
       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
@@ -54,14 +59,4 @@
       nat_CIDR_vars: "{{ hostvars['127.0.0.1']['nat_CIDR'] }}"
     - role: instances.authorized_keys
       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-
-#####
-# Configure instances
-#####
-- hosts: instances
-  become: yes
-  remote_user: centos
-  gather_facts: yes
-
-  roles:
-    - role: instances.config
+    - role: instances.ssh_regen
