@@ -14,6 +14,12 @@
       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
       subnet_facts_vars: "{{ subnet_facts }}"
       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+    - role: aws.routes
+      aws_vpc_vars: "{{ hostvars['127.0.0.1']['aws_vpc'] }}"
+      nat_id_facts_vars: "{{ nat_instance_facts.tagged_instances.0.id }}"
+      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+      subnet_facts_vars: "{{ subnet_facts }}"
+      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
     # Create security groups
     - role: aws.securitygroups
       nat_ip_facts_vars: "{{ nat_instance_facts.tagged_instances.0.private_ip }}"
@@ -51,7 +57,7 @@
   roles:
     - role: nat.config
       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-      nat_CIDR_vars: "{{ hostvars['127.0.0.1']['nat_CIDR'] }}"
+      nat_CIDR_fact_vars: "{{ hostvars['127.0.0.1']['nat_CIDR_fact'] }}"
     - role: instances.authorized_keys
       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
 
