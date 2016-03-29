@@ -7,6 +7,9 @@
   gather_facts: yes
 
   roles:
+    - role: aws.vpc
+      aws_vpc_vars: "{{ hostvars['127.0.0.1']['aws_vpc'] }}"
+      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
     # Create NAT instance
     - role: aws.subnet_facts
       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
