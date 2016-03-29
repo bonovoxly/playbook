@@ -1,0 +1,17 @@
+---
+# tasks file for nat.ssh_gather
+- name: Get SSH fingerprint.
+  shell: "ssh-keyscan {{ item }} | awk '/ecdsa-sha2-nistp256/'"
+  register: ssh_fingerprint_fact
+  with_items: groups.instances
+
+- name: Set SSH fingerprint facts
+  set_fact:
+    ssh_fingerprint_fact_fact: "{{ item.stdout }}"
+  with_items: ssh_fingerprint_fact.results
+  register: ssh_fingerprint_collection_facts
+
+- name: debug 2
+  debug:
+    msg: "{{ item.ansible_facts.ssh_fingerprint_fact_fact }}"
+  with_items: ssh_fingerprint_collection_facts.results

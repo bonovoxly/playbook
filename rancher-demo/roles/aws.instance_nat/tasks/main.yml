@@ -1,0 +1,55 @@
+---
+# tasks file for aws.instance_nat
+- name: Create nat inbound rules.
+  ec2_group:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    description: "{{ nat_vars.instance_tags.Name }} inbound rules"
+    name: "{{ nat_vars.inbound_rules_name.Name }}"
+    rules: "{{ nat_vars.inbound_rules }}"
+    vpc_id: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='vpc_id')|list|first }}"
+  register: nat_inbound_facts
+
+- name: Tag nat inbound traffic rules.
+  ec2_tag:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    resource: "{{ nat_inbound_facts.group_id }}"
+    state: present
+    tags: "{{ nat_vars.inbound_rules_name }}"
+
+- name: Find ami_id.
+  ec2_ami_find:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    name: "{{ nat_vars.image }}"
+    sort: name
+    sort_order: descending
+  register: nat_ami_facts
+
+- name: Create nat instance.
+  ec2:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    count_tag:
+      Name: "{{ nat_vars.instance_tags.Name }}"
+    exact_count: "{{ nat_vars.exact_count }}"
+    group: "{{ nat_vars.groups }}"
+    instance_tags: "{{ nat_vars.instance_tags }}"
+    image: "{{ nat_ami_facts.results.0.ami_id }}"
+    instance_type: "{{ nat_vars.instance_type }}"
+    key_name: "{{ vault_vars.key_pair }}"
+    source_dest_check: no
+    volumes: "{{ nat_vars.volumes }}"
+    vpc_subnet_id: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='id')|list|first }}"
+    assign_public_ip: "{{ nat_vars.assign_public_ip }}"
+    wait: "{{ nat_vars.wait }}"
+  register: nat_instance_facts
+
+- name: Print public IP address.
+  debug:
+    msg: "nat instance public_ip_address: {{ nat_instance_facts.tagged_instances.0.public_dns_name }}"

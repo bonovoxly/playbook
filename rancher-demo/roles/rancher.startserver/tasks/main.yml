@@ -1,0 +1,15 @@
+---
+# tasks file for rancher.startserver
+- name: Run Rancher Server
+  docker:
+    image: "rancher/server"
+    name: "rancher_server"
+    ports: "8080:8080"
+    restart_policy: always
+    state: started
+  register: rancher_start_facts
+
+- name: Wait if starting Rancher.
+  pause:
+    seconds: 120
+  when: rancher_start_facts.changed

@@ -1,0 +1,47 @@
+---
+# tasks file for localhost.ssh_init_advanced
+- name: Touch .ssh/config file.
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh/config"
+    state: touch
+
+# Couldn't get blockinfile with state = absent to work. Used multi-line sed instead.
+- name: Remove all key references from SSH files.
+  shell: "sed -i.ansible_backup '/^# {{ nat_vars.instance_tags.Organization }}/,/^# {{ nat_vars.instance_tags.Organization }}/d' {{ ansible_env.HOME }}/.ssh/config"
+
+- name: Set CIDR subnet fact.
+  set_fact:
+    nat_CIDR: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='cidr_block')|list|first }}"
+
+- name: Configure SSH proxy host.
+  blockinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/config"
+    marker: "# {{ nat_vars.instance_tags.Organization }}"
+    block: |
+      Host ip-{{ nat_CIDR.split('.')[0]}}-{{ nat_CIDR.split('.')[1]}}-*-*.ec2.internal
+           ProxyCommand ssh -i ~/.ssh/ansible.key -W %h:%p -q centos@{{ nat_public_dns_facts_vars }}
+           ServerAliveInterval 30
+
+# Only when our fingerprint matches the AMI, meaning this is a fresh install.
+- name: Remove all old known_hosts entries.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    regexp: "^.* # {{ nat_vars.instance_tags.Organization }}"
+    state: absent
+  when: nat_ami_awk_fingerprint_fact_vars is defined
+
+# Only when our fingerprint matches the AMI, meaning this is a fresh install.
+- name: Import nat SSH fingerprint.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    line: "{{ nat_public_dns_facts_vars }},{{ nat_public_ip_facts_vars }} {{ ssh_knownhosts_vars.buildami_base }} # {{ nat_vars.instance_tags.Organization }}"
+    insertafter: 'EOF'
+  when: nat_ami_awk_fingerprint_fact_vars is defined
+
+- name: Import SSH fingerprints for other hosts.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    line: "{{ item.1 }} {{ ssh_knownhosts_vars[item.0] }} # {{ ENV }}"
+  with_together:
+    - "{{ ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|map(attribute='tags.Role')|list }}"
+    - "{{ ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|map(attribute='private_dns_name')|list }}"

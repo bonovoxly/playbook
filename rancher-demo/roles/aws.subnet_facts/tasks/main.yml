@@ -1,0 +1,14 @@
+---
+# tasks file for aws.subnet_facts
+- name: Get b_dev subnet facts.
+  ec2_vpc_subnet_facts:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    filters:
+      "tag:Organization": b_dev
+  register: subnet_facts
+
+- name: debug
+  debug:
+    msg: "{{ subnet_facts }}"

@@ -1,0 +1,26 @@
+---
+# tasks file for localhost.ssh_check
+- name: Get SSH fingerprint.
+  shell: "ssh-keyscan {{ nat_public_dns_facts_vars }} | awk '/ecdsa-sha2-nistp256/' | awk '{ print $3 }'"
+  register: nat_ssh_fingerprint_fact
+
+- name: debug
+  debug:
+    msg: "{{ nat_ssh_fingerprint_fact.stdout }}"
+
+- name: AWK for the NAT fingerprint.
+  shell: "grep {{ nat_public_dns_facts_vars }} {{ ansible_env.HOME }}/.ssh/known_hosts | grep {{ nat_ssh_fingerprint_fact.stdout }} | grep {{ nat_vars.instance_tags.Organization }} | awk '{ print $1 }'"
+  register: nat_awk_fingerprint_fact
+
+- name: AWK for AMI fingerprint, in case NAT hasn't been customized.
+  shell: "grep {{ nat_public_dns_facts_vars }} {{ ansible_env.HOME }}/.ssh/known_hosts | grep '{{ ssh_knownhosts_vars.buildami_base }}' | grep {{ nat_vars.instance_tags.Organization }} | awk '{ print $1 }'"
+  register: nat_ami_awk_fingerprint_fact
+
+- name: Fail if both the NAT and AMI fingerprints fail.
+  fail:
+    msg: "ERROR - both fingerprints failed.  Possible MitM or misconfiguration."
+  when:  nat_awk_fingerprint_fact.stdout == '' and nat_ami_awk_fingerprint_fact.stdout == ''
+
+- name: pause
+  pause:
+    seconds: 500

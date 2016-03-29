@@ -1,0 +1,33 @@
+---
+# tasks file for ansible.groups_init
+- name: Instances to add to host group...
+  debug:
+    msg: "{{ item.tags.Role }} - {{ item.private_dns_name }}"
+  with_items:
+    - "{{ ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|list }}"
+
+- name: Add instances to their role group.
+  add_host:
+    groups: "{{ item.tags.Role }}"
+    hostname: "{{ item.private_dns_name }}"
+  with_items:
+    - "{{ ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|list }}"
+
+- name: Add instances to the instances group.
+  add_host:
+    groups: instances
+    hostname: "{{ item.private_dns_name }}"
+  with_items:
+    - "{{ ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|list }}"
+  when: item.tags.Role != 'nat'
+
+- name: Add public NAT (work around for the private IP address list).
+  add_host:
+    groups: nat_public
+    hostname: "{{ ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|selectattr('tags.Role', 'equalto', item)|map(attribute='public_dns_name')|list|first }}"
+  with_items:
+    - "{{ nat_vars.instance_tags.Role }}"
+
+- name: debug
+  debug:
+    msg: "{{ groups }}"

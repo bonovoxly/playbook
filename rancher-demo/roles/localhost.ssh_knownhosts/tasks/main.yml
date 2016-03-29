@@ -1,0 +1,7 @@
+---
+# tasks file for localhost.ssh_knownhosts
+- name: Import SSH fingerprints for other hosts.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    line: "{{ item.ansible_facts.ssh_fingerprint_fact_fact }}"
+  with_items: ssh_fingerprint_fact_vars

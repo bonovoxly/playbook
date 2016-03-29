@@ -1,0 +1,13 @@
+---
+# tasks file for aws.vpc
+- name: Create VPC.
+  ec2_vpc:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    state: "{{ aws_vpc_vars.state }}"
+    cidr_block: "{{ aws_vpc_vars.cidr_block }}"
+    internet_gateway: "{{ aws_vpc_vars.gateway }}"
+    resource_tags: "{{ aws_vpc_vars.resource_tags }}"
+    subnets: "{{ aws_vpc_vars.subnets }}"
+  register: vpc_results
