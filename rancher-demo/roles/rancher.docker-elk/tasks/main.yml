@@ -1,0 +1,11 @@
+---
+# tasks file for rancher.docker-elk
+- name: Start the docker-elk stack.
+  shell: " curl -s -u {{ environment_api_token_fact }} -X POST -H 'Content-Type: application/json' http://127.0.0.1:8080/v1/projects/1a5/environments -d '{{ rancher_vars.docker_elk }}'"
+
+- name: Wait for docker-elk stack to be created.
+  shell: curl -s -u {{ environment_api_token_fact }} -X GET http://localhost:8080/v1/projects/1a5/environments/1e3|python -m json.tool|grep transitioning|head -n1
+  register: wait_dockerelk_stack
+  until: wait_dockerelk_stack.stdout.find('no') != -1
+  delay: 15
+  retries: 40

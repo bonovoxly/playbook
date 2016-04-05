@@ -1,0 +1,10 @@
+---
+# demo_aws_internal Rancher variables
+demo_aws_internal_elasticsearch:
+  elasticsearch_templates:
+    - name: topbeat
+      template_file: "topbeat.template.json"
+    - name: filebeat
+      template_file: "filebeat.template.json"
+    - name: logstash
+      template_file: "logstash.template.json"

@@ -1,0 +1,12 @@
+---
+# tasks file for aws.iam
+- name: Apply route53 policy to user.
+  iam_policy:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    iam_type: user
+    iam_name: route53_user
+    policy_name:  route53_rancher
+    state: present
+    policy_document: './files/route53_rancher.json'

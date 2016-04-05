@@ -1,0 +1,21 @@
+convoy-gluster-storagepool:
+  scale: 1
+  health_check:
+    port: 10241
+    interval: 2000
+    unhealthy_threshold: 3
+    strategy: recreate
+    response_timeout: 2000
+    request_line: GET /healthcheck HTTP/1.0
+    healthy_threshold: 2
+convoy-gluster:
+  health_check:
+    port: 10241
+    interval: 2000
+    unhealthy_threshold: 3
+    strategy: recreate
+    response_timeout: 2000
+    request_line: GET /healthcheck HTTP/1.0
+    healthy_threshold: 2
+  metadata:
+    volume_pool: glustervolume

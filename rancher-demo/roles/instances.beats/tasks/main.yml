@@ -1,0 +1,16 @@
+---
+# tasks file for instances.beats
+- name: Install beats.
+  yum:
+    name: https://download.elastic.co/beats/topbeat/topbeat-1.2.0-x86_64.rpm
+    state: present
+
+- name: Copy topbeats config file.
+  template:
+    src: "./files/templates/topbeat.yml.j2"
+    dest: "/etc/topbeat/topbeat.yml"
+
+- name: Reboot topbeat.
+  service:
+    name: topbeat
+    state: restarted

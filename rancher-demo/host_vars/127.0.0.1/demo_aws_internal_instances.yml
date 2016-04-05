@@ -1,0 +1,123 @@
+---
+demo_aws_internal_instances:
+  rancher1:
+    docker:
+      image: "rancher/server"
+      tag: "latest"
+    exact_count: "1"
+    groups: "{{ ENV_yaml }}-rancher_inbound"
+    image: "buildami_base"
+    # image: ami-a5fee6c4
+    instance_tags:
+      Name: "rancher1"
+      Organization: b_dev
+      Environment: "aws"
+      Role: rancher
+    instance_type: "t2.medium"
+    state: "running"
+    subnet: "{{ ENV_yaml }}-rancher1"
+    wait: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        delete_on_termination: yes
+  rancherhost1:
+    docker:
+      command: ":8080/v1/scripts/E6992B18075B62BDA62A:1459274400000:4cfQqtjTtuqIJRP9TBWTAf9DQ"
+      image: "rancher/agent"
+      tag: "v0.11.0"
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/var/lib/rancher:/var/lib/rancher'
+    exact_count: "1"
+    groups: "{{ ENV_yaml }}-rancher_host_inbound"
+    image: "buildami_base"
+    # image: ami-a5fee6c4
+    instance_tags:
+      Name: "rancherhost1"
+      Organization: b_dev
+      Environment: "aws"
+      Role: rancherhost
+    instance_type: "t2.medium"
+    state: "running"
+    subnet: "{{ ENV_yaml }}-rancher1"
+    wait: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        delete_on_termination: yes
+  rancherhost2:
+    docker:
+      command: ":8080/v1/scripts/E6992B18075B62BDA62A:1459274400000:4cfQqtjTtuqIJRP9TBWTAf9DQ"
+      image: "rancher/agent"
+      tag: "v0.11.0"
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/var/lib/rancher:/var/lib/rancher'
+    exact_count: "1"
+    groups: "{{ ENV_yaml }}-rancher_host_inbound"
+    image: "buildami_base"
+    # image: ami-a5fee6c4
+    instance_tags:
+      Name: "rancherhost2"
+      Organization: b_dev
+      Environment: "aws"
+      Role: rancherhost
+    instance_type: "t2.medium"
+    state: "running"
+    subnet: "{{ ENV_yaml }}-rancher2"
+    wait: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        delete_on_termination: yes
+  rancherhost3:
+    docker:
+      command: ":8080/v1/scripts/E6992B18075B62BDA62A:1459274400000:4cfQqtjTtuqIJRP9TBWTAf9DQ"
+      image: "rancher/agent"
+      tag: "v0.11.0"
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/var/lib/rancher:/var/lib/rancher'
+    exact_count: "1"
+    groups: "{{ ENV_yaml }}-rancher_host_inbound"
+    image: "buildami_base"
+    # image: ami-a5fee6c4
+    instance_tags:
+      Name: "rancherhost3"
+      Organization: b_dev
+      Environment: "aws"
+      Role: rancherhost
+    instance_type: "t2.medium"
+    state: "running"
+    subnet: "{{ ENV_yaml }}-rancher1"
+    wait: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        delete_on_termination: yes
+  rancherhost4:
+    docker:
+      command: ":8080/v1/scripts/E6992B18075B62BDA62A:1459274400000:4cfQqtjTtuqIJRP9TBWTAf9DQ"
+      image: "rancher/agent"
+      tag: "v0.11.0"
+      volumes:
+        - '/var/run/docker.sock:/var/run/docker.sock'
+        - '/var/lib/rancher:/var/lib/rancher'
+    exact_count: "1"
+    groups: "{{ ENV_yaml }}-rancher_host_inbound"
+    image: "buildami_base"
+    # image: ami-a5fee6c4
+    instance_tags:
+      Name: "rancherhost4"
+      Organization: b_dev
+      Environment: "aws"
+      Role: rancherhost
+    instance_type: "t2.medium"
+    state: "running"
+    subnet: "{{ ENV_yaml }}-rancher2"
+    wait: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        delete_on_termination: yes

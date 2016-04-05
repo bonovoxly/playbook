@@ -1,0 +1,117 @@
+---
+# tasks file for aws.elb_rancher_elk
+# - name: Create s3_rancher_elkbucket_policy from template.
+#   template:
+#     src: './files/templates/s3_rancher_elkbucket_policy.json.j2'
+#     dest: './files/s3_rancher_elkbucket_policy.json'
+#
+# - name: S3 bucket for ELB logs.
+#   s3_bucket:
+#     aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+#     aws_access_key: "{{ vault_vars.aws_access_key }}"
+#     region: "{{ vault_vars.region }}"
+#     name: "{{ elb_rancher_elk_vars.bucket_tags.Name }}"
+#     policy: "{{ lookup('file', './files/s3_rancher_elkbucket_policy.json') }}"
+#     state: "present"
+#     tags: "{{ elb_rancher_elk_vars.bucket_tags }}"
+#
+# - name: Remove s3_rancher_elkbucket_policy file.
+#   file:
+#     path: './files/s3_rancher_elkbucket_policy.json'
+#     state: absent
+
+# - name: Copy contents of public cert to file.
+#   copy:
+#     content: "{{ vault_vars.cert }}"
+#     dest: './cert.pem'
+#     mode: "u+rw,g-rwx,o-rwx"
+#   when: vault_vars.cert is defined
+#
+# - name: Copy contents of private key to file.
+#   copy:
+#     content: "{{ vault_vars.key }}"
+#     dest: './key.pem'
+#     mode: "u+rw,g-rwx,o-rwx"
+#   when: vault_vars.key is defined
+#
+# - name: Copy contents of chain to file.
+#   copy:
+#     content: "{{ vault_vars.chain }}"
+#     dest: './chain.pem'
+#     mode: "u+rw,g-rwx,o-rwx"
+#   when: vault_vars.chain is defined
+#
+# - name: Upload certificate, key, and chain.
+#   iam_cert:
+#     aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+#     aws_access_key: "{{ vault_vars.aws_access_key }}"
+#     region: "{{ vault_vars.region }}"
+#     dup_ok: yes
+#     name: "{{ elb_rancher_elk_vars.elb_ssl_name }}"
+#     state: "present"
+#     cert: "{{ cert|default('./cert.pem') }}"
+#     key: "{{ key|default('./key.pem') }}"
+#     cert_chain: "{{ chain|default('./chain.pem') }}"
+#
+# - name: Delete temporary cert, key, and chain files.
+#   file:
+#     state: absent
+#     path: "{{ item }}"
+#   with_items: ['./cert.pem', './key.pem', './chain.pem']
+#
+- name: Set listener fact (to parse the variables).
+  set_fact:
+    listeners_facts: "{{ elb_rancher_elk_vars.listeners }}"
+
+- name: Get ELB subnet facts.
+  ec2_vpc_subnet_facts:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    filters:
+      "tag:Environment": "{{ ENV_yaml }}"
+      "tag:Role": "{{ elb_rancher_elk_vars.elb_tags.Role }}"
+  register: elb_rancher_elksubnet_facts
+
+- name: Create ELK Rancher ELB.
+  ec2_elb_lb_devel:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    name: "{{ elb_rancher_elk_vars.elb_tags.Name }}"
+    state: "present"
+    subnets: "{{ elb_rancher_elksubnet_facts.subnets|selectattr('tags.Role', 'equalto', 'elb')|map(attribute='id')|join(',') }}"
+    idle_timeout: "{{ elb_rancher_elk_vars.idle_timeout }}"
+    listeners: "{{ listeners_facts }}"
+    health_check:
+        ping_protocol: "{{ elb_rancher_elk_vars.health_check.ping_protocol }}" # options are http, https, ssl, tcp
+        ping_port: "{{ elb_rancher_elk_vars.health_check.ping_port }}"
+        response_timeout: "{{ elb_rancher_elk_vars.health_check.response_timeout }}" # seconds
+        interval: "{{ elb_rancher_elk_vars.health_check.interval }}" # seconds
+        unhealthy_threshold: "{{ elb_rancher_elk_vars.health_check.unhealthy_threshold }}"
+        healthy_threshold: "{{ elb_rancher_elk_vars.health_check.healthy_threshold }}"
+    # access_logs:
+    #     interval: "{{ elb_rancher_elk_vars.access_logs.interval }}" # minutes (defaults to 60)
+    #     s3_location: "{{ elb_rancher_elk_vars.bucket_tags.Name }}" # This value is required if access_logs is set
+    #     s3_prefix: "{{ elb_rancher_elk_vars.access_logs.s3_prefix }}"
+    security_group_names: "{{ ENV_yaml }}-elb_inbound"
+  register: elb_rancher_elkfacts
+
+- name: debug
+  debug:
+    msg: "{{ ec2_facts.instances|selectattr('state', 'equalto', 'running')|selectattr('tags.Role', 'equalto', 'rancherhost')|map(attribute='id')|list }}"
+
+- name: Instance Register
+  ec2_elb:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    instance_id: "{{ item }}"
+    ec2_elbs: "{{ elb_rancher_elk_vars.elb_tags.Name }}"
+    state: present
+    wait: no
+  with_items: ec2_facts.instances|selectattr('state', 'equalto', 'running')|selectattr('tags.Role', 'equalto', 'rancherhost')|map(attribute='id')|list
+
+- name: debug ELB facts.
+  debug:
+    msg: "{{ elb_rancher_elkfacts.elb.dns_name }}"

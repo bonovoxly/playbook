@@ -1,0 +1,20 @@
+glusterfs-daemon:
+  scale: 3
+  retain_ip: true
+  metadata:
+    volume_name: glustervolume
+glusterfs-volume-create:
+  scale: 3
+  retain_ip: true
+  metadata:
+    volume_name: glustervolume
+glusterfs-data:
+  scale: 3
+  retain_ip: true
+  metadata:
+    volume_name: glustervolume
+glusterfs-server:
+  scale: 3
+  retain_ip: true
+  metadata:
+    volume_name: glustervolume

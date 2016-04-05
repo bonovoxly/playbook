@@ -1,0 +1,6 @@
+---
+# tasks file for ansible.groups.elasticsearch
+- name: Add elasticsearch.
+  add_host:
+    groups: elasticsearch
+    hostname: "{{ elasticsearch_private_dns_fact }}"

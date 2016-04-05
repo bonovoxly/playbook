@@ -1,0 +1,29 @@
+---
+# tasks file for aws.route53
+- name: Internal DNS zone.
+  route53_zone:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    zone: "{{ ENV }}"
+    state: present
+    vpc_id: "{{ subnet_facts_vars.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='vpc_id')|list|first }}"
+    vpc_region: "{{ vault_vars.region }}"
+
+- name: Pause for zone creation.
+  pause:
+    seconds: 3
+
+- name: Create hostnames.
+  route53:
+    aws_secret_key: "{{ vault_vars.aws_secret_key }}"
+    aws_access_key: "{{ vault_vars.aws_access_key }}"
+    region: "{{ vault_vars.region }}"
+    command: create
+    private_zone: yes
+    zone: "{{ ENV }}"
+    record: "{{ item.private_dns_name.split('.')[0] }}.{{ ENV }}"
+    type: A
+    ttl: 600
+    value: "{{ item.private_ip_address }}"
+  with_items: ec2_facts_vars.instances|selectattr('state', 'equalto', 'running')|list

@@ -1,0 +1,12 @@
+input {
+  tcp {
+    port => 5000
+    type => "test"
+  }
+}
+
+input {
+  beats{
+    port => "5043"
+  }
+}

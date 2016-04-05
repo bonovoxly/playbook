@@ -1,0 +1,47 @@
+elasticsearch:
+  command: elasticsearch -Des.network.host=0.0.0.0
+  image: elasticsearch:latest
+  expose:
+    - "9200:9200"
+    - "9300:9300"
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack.name=$${stack_name}
+  # volume-driver: convoy-gluster
+  # volumes:
+  #   - elasticsearch-data:/usr/share/elasticsearch/data
+logstash:
+  command: logstash -f /etc/logstash/conf.d
+  image: logstash:latest
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack.name=$${stack_name}
+  links:
+    - elasticsearch
+  ports:
+    - "5000:5000"
+    - "5043:5043"
+  volume-driver: convoy-gluster
+  volumes:
+    - logstash-conf:/etc/logstash/conf.d
+kibana:
+  image: kibana:latest
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack.name=$${stack_name}
+  links:
+    - elasticsearch
+  ports:
+    - "5601:5601"
+  environment:
+    ELASTICSEARCH_URL: http://elasticsearch:9200
+nginx:
+  command: nginx -g 'daemon off;' -c /opt/nginx-conf/nginx.conf
+  image: nginx:latest
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack.name=$${stack_name}
+  links:
+    - kibana
+  ports:
+    - "80:80"
+  volume-driver: convoy-gluster
+  volumes:
+  - nginx-conf:/opt/nginx-conf
+  - nginx-logs:/var/logs/nginx

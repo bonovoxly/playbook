@@ -9,18 +9,17 @@
     sort: name
     sort_order: descending
   register: instances_ami_facts
-  with_dict: aws_instances
+  with_dict: instance_vars
 
 - name: debug
   debug:
-    msg: "{{ instances_ami_facts }}"
+    msg: "{{ instance_vars }}"
 
 - name: Create instances.
   ec2:
     aws_secret_key: "{{ vault_vars.aws_secret_key }}"
     aws_access_key: "{{ vault_vars.aws_access_key }}"
     region: "{{ vault_vars.region }}"
-    assign_public_ip: "{{ item.value.assign_public_ip|default('yes') }}"
     count_tag:
       Environment: "{{ item.value.instance_tags.Environment }}"
       Name: "{{ item.value.instance_tags.Name }}"

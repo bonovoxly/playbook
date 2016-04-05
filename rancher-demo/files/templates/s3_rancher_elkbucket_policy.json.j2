@@ -1,0 +1,14 @@
+{
+	"Version": "2008-10-17",
+	"Statement": [
+		{
+			"Sid": "",
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "arn:aws:iam::{{ hostvars['127.0.0.1'][ENV_yaml + '_elb_rancher_elk']['region_id'][region_yaml] }}:root"
+			},
+			"Action": "s3:*",
+			"Resource": "arn:aws:s3:::{{ elb_rancher_elk_vars.bucket_tags.Name }}/*"
+		}
+	]
+}

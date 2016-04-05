@@ -1,0 +1,30 @@
+---
+# tasks file for rancher.convoy
+- name: Start the glusterfs stack.
+  shell: " curl -s -u {{ environment_api_token_fact }} -X POST -H 'Content-Type: application/json' http://127.0.0.1:8080/v1/projects/1a5/environments -d '{{ rancher_vars.glusterfs }}'"
+
+- name: Wait for glusterfs stack to be created.
+  shell: curl -s -u {{ environment_api_token_fact }} -X GET http://localhost:8080/v1/projects/1a5/environments/1e1|python -m json.tool|grep transitioning|head -n1
+  register: wait_gluster_stack
+  until: wait_gluster_stack.stdout.find('no') != -1
+  delay: 15
+  retries: 40
+
+- name: Start the convoy-gluster stack.
+  shell: " curl -s -u {{ environment_api_token_fact }} -X POST -H 'Content-Type: application/json' http://127.0.0.1:8080/v1/projects/1a5/environments -d '{{ rancher_vars.convoy_gluster }}'"
+
+- name: Wait for convoy-gluster stack to be created.
+  shell: curl -s -u {{ environment_api_token_fact }} -X GET http://localhost:8080/v1/projects/1a5/environments/1e2|python -m json.tool|grep transitioning|head -n1
+  register: wait_convoy_stack
+  until: wait_convoy_stack.stdout.find('no') != -1
+  delay: 15
+  retries: 40
+
+- name: Check if volumes have been created.
+  shell: "curl -s -u {{ environment_api_token_fact }} -X GET -H 'Content-Type: application/json' http://localhost:8080/v1/projects/1a5/volumes | awk /{{ rancher_vars.volumes.0.name }}/"
+  register: volume_check_fact
+
+- name: Create convoy volumes.
+  shell: "curl -s -u {{ environment_api_token_fact }} -X POST -H 'Content-Type: application/json' http://localhost:8080/v1/projects/1a5/volumes -d '{\"driverOpts\":{},\"description\":\"{{ item.description }}\",\"name\":\"{{ item.name }}\",\"driver\":\"convoy-gluster\",\"isHostPath\":false}'"
+  with_items: rancher_vars.volumes
+  when: volume_check_fact.stdout.find('name') == -1

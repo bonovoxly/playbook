@@ -6,6 +6,11 @@
     state: latest
     update_cache: yes
 
+- name: Install EPEL.
+  yum:
+    name: epel-release
+    state: latest
+
 - name: Install iptables-service.
   yum:
     name: iptables-services

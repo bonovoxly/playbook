@@ -16,7 +16,7 @@
     description: "{{ item.Name }} inbound rules"
     name: "{{ item.Name }}"
     rules: "{{ item.rules | union(nat_ssh_rules)}}"
-    vpc_id: "{{ subnet_facts.subnets|selectattr('tags.Name', 'equalto', item.subnet)|map(attribute='vpc_id')|list|first }}"
+    vpc_id: "{{ subnet_facts_vars.subnets|selectattr('tags.Name', 'equalto', nat_vars.subnet)|map(attribute='vpc_id')|list|first }}"
   register: securitygroups_facts
   with_items: securitygroups_vars
 

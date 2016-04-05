@@ -1,0 +1,23 @@
+convoy-gluster-storagepool:
+  labels:
+    io.rancher.container.create_agent: 'true'
+  command:
+  - storagepool-agent
+  image: rancher/convoy-agent:v0.3.0
+  volumes:
+  - /var/run:/host/var/run
+convoy-gluster:
+  external_links:
+  - glusterfs/glusterfs-server:glusterfs
+  labels:
+    io.rancher.scheduler.global: 'true'
+    io.rancher.container.create_agent: 'true'
+  command:
+  - volume-agent-glusterfs
+  image: rancher/convoy-agent:v0.3.0
+  privileged: true
+  volumes:
+  - /lib/modules:/lib/modules:ro
+  - /proc:/host/proc
+  - /var/run:/host/var/run
+  - /etc/docker/plugins:/etc/docker/plugins

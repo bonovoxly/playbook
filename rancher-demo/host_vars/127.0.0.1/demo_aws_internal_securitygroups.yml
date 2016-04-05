@@ -1,0 +1,116 @@
+---
+securitygroups:
+  - Name: internal1_inbound
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 10.148.1.0/24
+    subnet: aws-internal
+  - Name: internal2_inbound
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 8009
+        to_port: 8009
+        cidr_ip: 10.148.1.0/32
+    subnet: aws-internal
+  - Name: "{{ ENV_yaml }}-rancher_inbound"
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 10.148.101.0/24
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 10.148.102.0/24
+      - proto: udp
+        from_port: 500
+        to_port: 500
+        cidr_ip: 10.148.2.0/24
+      - proto: udp
+        from_port: 500
+        to_port: 500
+        cidr_ip: 10.148.3.0/24
+      - proto: udp
+        from_port: 4500
+        to_port: 4500
+        cidr_ip: 10.148.2.0/24
+      - proto: udp
+        from_port: 4500
+        to_port: 4500
+        cidr_ip: 10.148.3.0/24
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 10.148.2.0/24
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 10.148.3.0/24
+  - Name: "{{ ENV_yaml }}-rancher_host_inbound"
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 10.148.101.0/24
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 10.148.102.0/24
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 10.148.2.0/24
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 10.148.3.0/24
+      - proto: udp
+        from_port: 500
+        to_port: 500
+        cidr_ip: 10.148.2.0/24
+      - proto: udp
+        from_port: 500
+        to_port: 500
+        cidr_ip: 10.148.3.0/24
+      - proto: udp
+        from_port: 4500
+        to_port: 4500
+        cidr_ip: 10.148.2.0/24
+      - proto: udp
+        from_port: 4500
+        to_port: 4500
+        cidr_ip: 10.148.3.0/24
+      - proto: tcp
+        from_port: 5043
+        to_port: 5043
+        cidr_ip: 10.148.0.0/16
+  - Name: "{{ ENV_yaml }}-elb_inbound"
+    Organization: b_dev
+    Environment: aws
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: "{{ vault.ip }}/32"
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: "{{ vault.ip }}/32"
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: "{{ vault.ip2 }}/32"
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: "{{ vault.ip2 }}/32"

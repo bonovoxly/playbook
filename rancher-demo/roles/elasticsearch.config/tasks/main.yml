@@ -1,0 +1,47 @@
+---
+# tasks file for elasticsearch.config
+- name: Copy elasticsearch index templates.
+  copy:
+    src: "./files/rancher/docker-elk/{{ item.template_file }}"
+    dest: "/root/{{ item.template_file }}"
+  with_items: "{{ elasticsearch_vars.elasticsearch_templates }}"
+
+- name: Search for templates.
+  shell: "curl -s -XPUT localhost:9200/_template?pretty|grep template|grep {{ item.name }}|awk '{print $3 }'"
+  with_items: "{{ elasticsearch_vars.elasticsearch_templates }}"
+  register: elasticsearch_templates_facts
+
+- name: Import templates.
+  shell: "curl -s -XPUT 'http://localhost:9200/_template/{{ item.item.name }}?pretty' -d@{{ item.item.template_file }}"
+  args:
+    chdir: /root
+  with_items: elasticsearch_templates_facts.results
+  register: import_template_facts
+
+- name: Install git.
+  yum:
+    name: git
+    state: latest
+
+- name: Clone beats dashboards.
+  git:
+    repo: https://github.com/elastic/beats-dashboards.git
+    dest: /root/beats-dashboards
+
+- name: Install beats dashboards.
+  shell: ./load.sh -url "http://localhost:9200" -index .kibana-4
+  args:
+    chdir: /root/beats-dashboards
+  register: beats_output_fact
+
+- name: debug
+  debug:
+    msg: "{{ beats_output_fact }}"
+
+- name: Set default index.
+  shell: curl -XPUT http://localhost:9200/.kibana-4/config/4.5.0?pretty -d '{"buildNum":9889, "defaultIndex":"topbeat-*"}'
+  register: default_index_fact
+
+- name: debug
+  debug:
+    msg: "{{ default_index_fact }}"

@@ -1,0 +1,8 @@
+nginx:
+  scale: 1
+logstash:
+  scale: 1
+kibana:
+  scale: 1
+elasticsearch:
+  scale: 1

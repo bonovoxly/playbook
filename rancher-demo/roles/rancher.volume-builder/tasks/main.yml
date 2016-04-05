@@ -1,0 +1,33 @@
+---
+# tasks file for rancher.volume-builder
+- name: Copy volume-builder.
+  copy:
+    src: ./files/rancher/volume-builder
+    dest: /root
+
+- name: template nginx.config
+  template:
+    src: "./files/rancher/volume-builder/files/nginx-conf/nginx.conf.j2"
+    dest: "/root/volume-builder/files/nginx-conf/nginx.conf"
+
+- name: Search for volume-builder.
+  shell: "docker ps -a | grep volume-builder | grep {{ rancher_vars.volume_builder_tag }} | awk '{ print $1 }'"
+  register: volume_search_register
+
+- name: Build volume-builder.
+  shell: "docker build -t volume-builder:{{ rancher_vars.volume_builder_tag }} ."
+  args:
+    chdir: /root/volume-builder
+  when: volume_search_register.stdout.strip() == ""
+
+- name: Docker run volume-builder
+  shell: "docker run -d -t --name volume-builder --volume-driver convoy-gluster -v logstash-conf:/opt/logstash-conf -v kibana-conf:/opt/kibana-conf -v nginx-conf:/opt/nginx-conf -v nginx-logs:/opt/nginx-logs volume-builder:{{ rancher_vars.volume_builder_tag }} /tmp/gluster-launcher.sh"
+  when: volume_search_register.stdout.strip() == ""
+
+- name: Search for all stopped containers.
+  shell: "docker ps | grep volume-builder | grep -v {{ rancher_vars.volume_builder_tag }} | awk '{print $1}'"
+  register: volume_builder_old_fact
+
+- name: cleanup old Docker containers.
+  shell: "docker rm $(docker ps | grep volume-builder | grep -v {{ rancher_vars.volume_builder_tag }} | awk '{print $1}' )"
+  when: volume_builder_old_fact.stdout.strip() != ""

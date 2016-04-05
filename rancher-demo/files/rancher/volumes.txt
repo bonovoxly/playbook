@@ -1,0 +1,4 @@
+{"driverOpts":{},"description":"elasticsearch data","name":"elasticsearch-data","driver":"convoy-gluster","isHostPath":false}
+{"driverOpts":{},"description":"logstash config","name":"logstash-conf","driver":"convoy-gluster","isHostPath":false}
+{"driverOpts":{},"description":"nginx config","name":"nginx-conf","driver":"convoy-gluster","isHostPath":false}
+{"driverOpts":{},"description":"nginx logs","name":"nginx-logs","driver":"convoy-gluster","isHostPath":false}

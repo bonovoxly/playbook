@@ -1,0 +1,15 @@
+---
+# tasks file for rancher.route53
+- name: Start the route53 stack.
+  shell: " curl -s -u {{ environment_api_token_fact }} -X POST -H 'Content-Type: application/json' http://127.0.0.1:8080/v1/projects/1a5/environments -d '{{ vault_vars.rancher.route53 }}'"
+
+- name: Wait for route53 stack to be created.
+  shell: curl -s -u {{ environment_api_token_fact }} -X GET http://localhost:8080/v1/projects/1a5/environments/1e4|python -m json.tool|grep transitioning|head -n1
+  register: wait_route53_stack
+  until: wait_route53_stack.stdout.find('no') != -1
+  delay: 15
+  retries: 40
+
+- name: Wait to ensure route53 finishes configuration.
+  pause:
+    seconds: 15

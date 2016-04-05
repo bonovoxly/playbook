@@ -1,0 +1,82 @@
+---
+# rancher_demo_aws_internal Elastic Load Balancer
+demo_aws_internal_elb_rancher:
+  access_logs:
+    interval: 5 # minutes (defaults to 60)
+    s3_prefix: "logs"
+  bucket_tags:
+    Name: "{{ ENV_yaml }}-elbbucket-rancher"
+    Organization: b_dev
+    Environment: "{{ ENV_yaml }}"
+    Role: elb_logs-rancher
+  # elb_ssl_name: "{{ ENV_yaml }}-elbssl-rancher"
+  elb_tags:
+    Name: "{{ ENV_yaml.replace('_','-') }}-elb-r"
+    Organization: b_dev
+    Environment: "{{ ENV_yaml }}"
+    Role: elb
+  health_check:
+    ping_protocol: "tcp" # options are http, https, ssl, tcp
+    ping_port: "8080"
+    # ping_path: "/" # not required for tcp or ssl
+    response_timeout: 3 # seconds
+    interval: 10 # seconds
+    unhealthy_threshold: 2
+    healthy_threshold: 5
+  idle_timeout: 600
+  listeners:
+    # - protocol: "ssl"
+    #   proxy_protocol: True
+    #   load_balancer_port: 443
+    - protocol: "tcp"
+      proxy_protocol: True
+      load_balancer_port: 80
+      instance_protocol: "tcp" # optional, defaults to value of protocol setting
+      instance_port: 8080
+      # ssl_certificate_id: "arn:aws:iam::{{ vault_vars.account_id }}:server-certificate/{{ ENV_yaml }}-elbssl"
+  region_id:
+    us_east_1: 127311923021
+    us_west_2: 797873946194
+    us_west_1: 027434742980
+    eu_west_1: 156460612806
+    eu_central_1: 054676820928
+
+# rancher_elk_demo_aws_internal Elastic Load Balancer
+demo_aws_internal_elb_rancher_elk:
+  access_logs:
+    interval: 5 # minutes (defaults to 60)
+    s3_prefix: "logs"
+  bucket_tags:
+    Name: "{{ ENV_yaml }}-elbbucket-rancher_elk"
+    Organization: b_dev
+    Environment: "{{ ENV_yaml }}"
+    Role: elb_logs-rancher
+  # elb_ssl_name: "{{ ENV_yaml }}-elbssl-rancher_elk"
+  elb_tags:
+    Name: "{{ ENV_yaml.replace('_','-') }}-elb-re"
+    Organization: b_dev
+    Environment: "{{ ENV_yaml }}"
+    Role: elb
+  health_check:
+    ping_protocol: "tcp" # options are http, https, ssl, tcp
+    ping_port: "80"
+    # ping_path: "/" # not required for tcp or ssl
+    response_timeout: 3 # seconds
+    interval: 10 # seconds
+    unhealthy_threshold: 2
+    healthy_threshold: 5
+  idle_timeout: 600
+  listeners:
+    # - protocol: "https"
+    #   load_balancer_port: 443
+    - protocol: "http"
+      load_balancer_port: 80
+      instance_protocol: "http" # optional, defaults to value of protocol setting
+      instance_port: 80
+      # ssl_certificate_id: "arn:aws:iam::{{ vault_vars.account_id }}:server-certificate/{{ ENV_yaml }}-elbssl"
+  region_id:
+    us_east_1: 127311923021
+    us_west_2: 797873946194
+    us_west_1: 027434742980
+    eu_west_1: 156460612806
+    eu_central_1: 054676820928

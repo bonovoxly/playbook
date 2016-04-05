@@ -1,0 +1,57 @@
+glusterfs-daemon:
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/glusterfs-server
+    io.rancher.container.network: 'true'
+    io.rancher.container.hostname_override: container_name
+    io.rancher.container.dns: 'true'
+  command:
+  - glusterd
+  - -p
+  - /var/run/gluster.pid
+  - --no-daemon
+  - --log-file=-
+  image: rancher/glusterfs:v0.2.1
+  volumes_from:
+  - glusterfs-data
+  net: container:glusterfs-server
+  cap_add:
+  - SYS_ADMIN
+glusterfs-volume-create:
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/glusterfs-server
+    io.rancher.container.start_once: 'true'
+    io.rancher.container.hostname_override: container_name
+  command:
+  - /opt/rancher/replicated_volume_create.sh
+  - container:glusterfs-server
+  image: rancher/glusterfs:v0.2.1
+  volumes_from:
+  - glusterfs-data
+  net: container:glusterfs-server
+glusterfs-data:
+  labels:
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/glusterfs-server
+    io.rancher.container.start_once: 'true'
+    io.rancher.container.hostname_override: container_name
+  command:
+  - /bin/true
+  image: busybox
+  volumes:
+  - /var/lib/glusterd
+  - /var/run
+  net: none
+glusterfs-server:
+  labels:
+    io.rancher.sidekicks: glusterfs-daemon,glusterfs-data,glusterfs-volume-create
+    io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/glusterfs-server
+    io.rancher.container.hostname_override: container_name
+  command:
+  - giddyup
+  - leader
+  - elect
+  - --proxy-tcp-port=2160
+  - /opt/rancher/peerprobe.sh
+  - container:glusterfs-server
+  image: rancher/glusterfs:v0.2.1
+  volumes_from:
+  - glusterfs-data

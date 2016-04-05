@@ -1,0 +1,9 @@
+---
+# tasks file for rancher.waitforhosts
+- name: Wait for Rancher hosts to start up .
+  shell: curl -s -u {{ environment_api_token_fact }} GET http://localhost:8080/v1/projects/1a5/hosts|python -m json.tool|grep {{ item.split('.')[0] }} | awk '{print $2 }'
+  register: wait_rancherhosts
+  with_items: groups['rancherhost']
+  until: wait_rancherhosts.stdout.find(item.split('.')[0]) != -1
+  delay: 5
+  retries: 10
