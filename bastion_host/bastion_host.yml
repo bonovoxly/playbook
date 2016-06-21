@@ -7,70 +7,76 @@
   gather_facts: yes
 
   roles:
+    # load variables
+    - role: load_variables
+      variables:
+        - vars/aws_infrastructure.yml
+        - vars/aws_instances.yml
+        - vars/aws_nat.yml
+        - vars/vault.yml
+    # create and configure VPC
     - role: aws.vpc
-      aws_vpc_vars: "{{ hostvars['127.0.0.1']['aws_vpc'] }}"
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    # Create NAT instance
-    - role: aws.subnet_facts
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    - role: aws.instance_nat
-      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-      subnet_facts_vars: "{{ subnet_facts }}"
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    - role: aws.routes
-      aws_vpc_vars: "{{ hostvars['127.0.0.1']['aws_vpc'] }}"
-      nat_id_facts_vars: "{{ nat_instance_facts.tagged_instances.0.id }}"
-      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-      subnet_facts_vars: "{{ subnet_facts }}"
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    # Create security groups
-    - role: aws.securitygroups
-      nat_ip_facts_vars: "{{ nat_instance_facts.tagged_instances.0.private_ip }}"
-      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-      securitygroups_vars: "{{ hostvars['127.0.0.1']['securitygroups'] }}"
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    - role: aws.instances
-      instance_vars: "{{ hostvars['127.0.0.1']['aws_instances'] }}"
-      subnet_facts_vars: "{{ subnet_facts }}"
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    # Get AWS facts.  Needs a dictionary passed in as aws_fact_vars
-    - role: aws.facts
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    # Configure localhost SSH config
-    - role: localhost.ssh_init
-      ec2_facts_vars: "{{ hostvars['127.0.0.1']['ec2_facts'] }}"
-      nat_public_dns_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_dns_name }}"
-      nat_public_ip_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_ip }}"
-      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-      ssh_knownhosts_vars: "{{ hostvars['127.0.0.1']['ssh_knownhosts'] }}"
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-    # Configure Ansible groups
-    - role: ansible.groups_init
-      ec2_facts_vars: "{{ hostvars['127.0.0.1']['ec2_facts']}}"
-      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-
-#####
-# Configure NAT instance
-#####
-- hosts: nat_public
-  become: yes
-  remote_user: centos
-  gather_facts: yes
-
-  roles:
-    - role: nat.config
-      nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
-      nat_CIDR_fact_vars: "{{ hostvars['127.0.0.1']['nat_CIDR_fact'] }}"
-    - role: instances.authorized_keys
-      vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
-
-#####
-# Configure instances
-#####
-- hosts: instances
-  become: yes
-  remote_user: centos
-  gather_facts: yes
-
-  roles:
-    - role: instances.config
+#     # Create NAT instance
+#     - role: aws.subnet_facts
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     - role: aws.instance_nat
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#       subnet_facts_vars: "{{ subnet_facts }}"
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     - role: aws.routes
+#       aws_vpc_vars: "{{ hostvars['127.0.0.1']['aws_vpc'] }}"
+#       nat_id_facts_vars: "{{ nat_instance_facts.tagged_instances.0.id }}"
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#       subnet_facts_vars: "{{ subnet_facts }}"
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     # Create security groups
+#     - role: aws.securitygroups
+#       nat_ip_facts_vars: "{{ nat_instance_facts.tagged_instances.0.private_ip }}"
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#       securitygroups_vars: "{{ hostvars['127.0.0.1']['securitygroups'] }}"
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     - role: aws.instances
+#       instance_vars: "{{ hostvars['127.0.0.1']['aws_instances'] }}"
+#       subnet_facts_vars: "{{ subnet_facts }}"
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     # Get AWS facts.  Needs a dictionary passed in as aws_fact_vars
+#     - role: aws.facts
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     # Configure localhost SSH config
+#     - role: localhost.ssh_init
+#       ec2_facts_vars: "{{ hostvars['127.0.0.1']['ec2_facts'] }}"
+#       nat_public_dns_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_dns_name }}"
+#       nat_public_ip_facts_vars: "{{ nat_instance_facts.tagged_instances.0.public_ip }}"
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#       ssh_knownhosts_vars: "{{ hostvars['127.0.0.1']['ssh_knownhosts'] }}"
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#     # Configure Ansible groups
+#     - role: ansible.groups_init
+#       ec2_facts_vars: "{{ hostvars['127.0.0.1']['ec2_facts']}}"
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#
+# #####
+# # Configure NAT instance
+# #####
+# - hosts: nat_public
+#   become: yes
+#   remote_user: centos
+#   gather_facts: yes
+#
+#   roles:
+#     - role: nat.config
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#       nat_CIDR_fact_vars: "{{ hostvars['127.0.0.1']['nat_CIDR_fact'] }}"
+#     - role: instances.authorized_keys
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#
+# #####
+# # Configure instances
+# #####
+# - hosts: instances
+#   become: yes
+#   remote_user: centos
+#   gather_facts: yes
+#
+#   roles:
+#     - role: instances.config
