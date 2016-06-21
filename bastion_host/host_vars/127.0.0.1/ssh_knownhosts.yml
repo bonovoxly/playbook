@@ -1,4 +1,0 @@
-
-ssh_knownhosts:
-  buildami_base: "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBPb9s6Ef7ThwiYPsdqmS4VdC/ofeaJco+SfPDgk/qFqkmM3tFOEnRZaxOP1S0vFazMdXK9y6M3HCEj95Da3U2yk=" # buildami_base
-  
