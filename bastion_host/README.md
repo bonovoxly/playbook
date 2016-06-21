@@ -2,7 +2,7 @@
 
 This playbook builds 3 instances: A NAT instance and two internal instances.  It does this while configuring the localhost to be able to SSH to all three instances using the NAT instance as an SSH proxy.
 
-There are two playbooks:  ```bastion_host.yml``` and ```bastion_host_advanced.yml```. The advanced script regenerates the SSH fingerprint for each host.
+There are two playbooks:  ```bastion_host.yml``` and ```bastion_host_advanced.yml```. The advanced script regenerates the SSH fingerprint for each host (in the future).
 
 Example run:
 
@@ -10,19 +10,23 @@ Example run:
 ansible-playbook bastion_host.yml
 ```
 
+This playbook is also written without pulling implicit variables.  No more automatically loading `host_vars/127.0.0.1/`. Changing the way I do things...
+
+# Prerequisites
+
+- Ansible 2.1
+- AWS CLI tools
+- Recommended to run this from a Docker container...
+
 # ansible-vault
 
-The Ansible vault file is kept under ```host_vars/127.0.0.1/vault.yml```.  It has the following structure:
+The Ansible vault file is kept under `vars/vault.yml`.  It has the following structure:
 
 ```
 vault:
-  admin_user: username
-  ami_ssh_fingerprint: "ecdsa-sha2-nistp256 blahblahblahblahfingerprint" # AMI fingerprint.  Needs to be manually retreived ahead of time.
   aws_secret_key: SECRET_KEY
   aws_access_key: ACCESS_KEY
-  ip: 'your_remote_ip_address' # where you are connecting from
   key_pair ssh_private_key_name # needs uploaded to AWS key pair
-  region: us-west-2 # or east or whereever
   ssh_users: |
     list of ssh public keys for users you want to provide access to
   # SSH key infoconfiguration
