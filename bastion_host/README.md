@@ -16,6 +16,7 @@ This playbook is also written without pulling implicit variables.  No more autom
 
 - Ansible 2.1
 - AWS CLI tools
+- Requires the Ansible roles Git repo - https://github.com/bonovoxly/ansible-roles .  These roles should be two directories away (`../../ansible-roles`).
 - Recommended to run this from a Docker container...
 
 # ansible-vault
