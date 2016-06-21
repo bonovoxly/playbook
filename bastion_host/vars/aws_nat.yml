@@ -1,0 +1,45 @@
+---
+# bastion_host nat instance
+nat:
+  ansible_group: nat
+  ansible_group_running: deploy-nat
+  assign_public_ip: yes
+  exact_count: "1"
+  host_settings:
+    ipv4_ip_forward: net.ipv4.ip_forward
+  groups: "nat_inbound"
+  # image: ami-13be557e
+  inbound_rules:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: "0.0.0.0/0"
+    - proto: icmp
+      from_port: 8
+      to_port: 8
+      cidr_ip: 10.148.0.0/16
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: 10.148.0.0/16
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: 10.148.0.0/16
+  inbound_rules_name:
+    Name: "nat_inbound"
+    Organization: b_dev
+    Environment: "aws"
+  instance_tags:
+    Name: "aws-nat"
+    Organization: b_dev
+    Environment: "aws"
+    Role: nat
+  instance_type: "t2.micro"
+  state: "running"
+  subnet: "aws-dmz"
+  wait: yes
+  volumes:
+    - device_name: /dev/sda1
+      volume_size: 8
+      delete_on_termination: yes
