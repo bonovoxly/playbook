@@ -57,3 +57,7 @@ vault.yml
 # demo folder #
 ###############
 working/*
+
+# travis files #
+################
+.travis.yml
