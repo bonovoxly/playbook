@@ -5,6 +5,9 @@ vpc:
   name: aws
   cidr_block: '10.148.0.0/16'
   gateway: yes
+  image: ami-d06a90b0
+  image_user: ubuntu
+  keypair: b_dev_demo
   region: 'us-west-2'
   state: present
   resource_tags:
@@ -42,23 +45,3 @@ vpc:
       Name: "aws-external_route"
       Organization: b_dev
       Environment: aws
-# security groups
-securitygroups:
-  - Name: internal1_inbound
-    Organization: b_dev
-    Environment: aws
-    rules:
-      - proto: tcp
-        from_port: 8080
-        to_port: 8080
-        cidr_ip: 10.148.1.0/24
-    subnet: aws-internal
-  - Name: internal2_inbound
-    Organization: b_dev
-    Environment: aws
-    rules:
-      - proto: tcp
-        from_port: 8009
-        to_port: 8009
-        cidr_ip: 10.148.1.0/32
-    subnet: aws-internal
