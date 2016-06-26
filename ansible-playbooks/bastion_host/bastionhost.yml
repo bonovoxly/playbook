@@ -1,0 +1,61 @@
+---
+#####
+# Initial AWS deployment
+#####
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  roles:
+    # Load variables
+    - role: load_variables
+      variables:
+        - vars/aws_infrastructure.yml
+        - vars/bastionhost.yml
+        - vars/internal_instances.yml
+        - vars/vault.yml
+    # Create and configure VPC
+    - role: aws.vpc
+    # Get VPC and subnet facts
+    - role: aws.vpc_facts
+      filters:
+        "tag:Organization": b_dev
+    - role: aws.bastionhost
+    - role: aws.routes
+    - role: aws.securitygroups
+    - role: aws.iam
+    - role: aws.ec2
+    # Get AWS facts.  Needs a dictionary passed in as aws_fact_vars
+    - role: aws.ec2_facts
+      filters:
+        "tag:Organization": b_dev
+    # Get SSH fingerprints and configure .ssh/config
+    - role: localhost.ssh_init
+    # Configure Ansible groups
+    - role: ansible.groups_init
+#
+# #####
+# # Configure NAT instance
+# #####
+# - hosts: nat_public
+#   become: yes
+#   remote_user: centos
+#   gather_facts: yes
+#
+#   roles:
+#     - role: nat.config
+#       nat_vars: "{{ hostvars['127.0.0.1']['nat'] }}"
+#       nat_CIDR_fact_vars: "{{ hostvars['127.0.0.1']['nat_CIDR_fact'] }}"
+#     - role: instances.authorized_keys
+#       vault_vars: "{{ hostvars['127.0.0.1']['vault'] }}"
+#
+# #####
+# # Configure instances
+# #####
+# - hosts: instances
+#   become: yes
+#   remote_user: centos
+#   gather_facts: yes
+#
+#   roles:
+#     - role: instances.config
