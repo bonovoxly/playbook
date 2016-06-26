@@ -1,0 +1,81 @@
+---
+# internal instances settings
+
+# AWS instance settings. Note that they are list of dictionaries.
+ec2:
+  - assign_public_ip: no
+    count_tag:
+      Name: "internal1"
+    exact_count: "1"
+    groups:
+      - "internal1_inbound"
+    instance_profile_name: "aws_internal1_role"
+    instance_tags:
+      Name: "internal1"
+      Organization: b_dev
+      Environment: "aws"
+      Role: internal1
+    instance_type: t2.nano
+    keypair: b_dev_demo
+    state: "running"
+    subnet: "aws-public"
+    tenancy: default
+    termination_protection: no
+    wait: yes
+    # volumes:
+    #   - device_name: /dev/sda1
+    #     volume_size: 8
+    #     delete_on_termination: yes
+  - assign_public_ip: no
+    count_tag:
+      Name: "internal2"
+    exact_count: "1"
+    groups:
+      - "internal2_inbound"
+    instance_profile_name: "aws_internal2_role"
+    instance_tags:
+      Name: "internal2"
+      Organization: b_dev
+      Environment: "aws"
+      Role: internal2
+    instance_type: t2.nano
+    keypair: b_dev_demo
+    state: "running"
+    subnet: "aws-public"
+    tenancy: default
+    termination_protection: no
+    wait: yes
+    # volumes:
+    #   - device_name: /dev/sda1
+    #     volume_size: 8
+    #     delete_on_termination: yes
+iam:
+  - iam_type: role
+    name: aws_internal1_role
+    state: present
+  - iam_type: role
+    name: aws_internal2_role
+    state: present
+securitygroups:
+  - name: internal1_inbound
+    description: internal1 inbound rules
+    rules:
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 10.148.0.0/16
+    tags:
+      Name: "internal1_inbound"
+      Organization: b_dev
+      Environment: "aws"
+  - name: internal2_inbound
+    description: internal2 inbound rules
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 10.148.1.0/24
+    tags:
+      Name: "internal2_inbound"
+      Organization: b_dev
+      Environment: "aws"
