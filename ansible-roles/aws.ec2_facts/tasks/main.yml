@@ -1,0 +1,9 @@
+---
+# tasks file for aws.ec2_facts
+- name: Get EC2 facts.
+  ec2_remote_facts:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc.region }}"
+    filters: "{{ filters }}"
+  register: ec2_facts
