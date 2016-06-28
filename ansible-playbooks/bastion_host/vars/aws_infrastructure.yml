@@ -12,7 +12,6 @@ vpc:
   image_user: ubuntu
   keypair: b_dev_demo
   region: 'us-west-2'
-  state: present
   resource_tags:
     Name: "aws-VPC"
     Organization: b_dev
