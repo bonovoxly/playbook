@@ -9,16 +9,16 @@ ec2:
     exact_count: "1"
     groups:
       - "internal1_inbound"
-    instance_profile_name: "aws_internal1_role"
+    instance_profile_name: "internal1_role"
     instance_tags:
       Name: "internal1"
       Organization: b_dev
       Environment: "aws"
-      Role: internal1
+      Role: internal_system
     instance_type: t2.nano
     keypair: b_dev_demo
     state: "running"
-    subnet: "aws-public"
+    subnet: "aws-private"
     tenancy: default
     termination_protection: no
     wait: yes
@@ -32,16 +32,16 @@ ec2:
     exact_count: "1"
     groups:
       - "internal2_inbound"
-    instance_profile_name: "aws_internal2_role"
+    instance_profile_name: "internal2_role"
     instance_tags:
       Name: "internal2"
       Organization: b_dev
       Environment: "aws"
-      Role: internal2
+      Role: internal_system
     instance_type: t2.nano
     keypair: b_dev_demo
     state: "running"
-    subnet: "aws-public"
+    subnet: "aws-private"
     tenancy: default
     termination_protection: no
     wait: yes
@@ -51,10 +51,10 @@ ec2:
     #     delete_on_termination: yes
 iam:
   - iam_type: role
-    name: aws_internal1_role
+    name: internal1_role
     state: present
   - iam_type: role
-    name: aws_internal2_role
+    name: internal2_role
     state: present
 securitygroups:
   - name: internal1_inbound
