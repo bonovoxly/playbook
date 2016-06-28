@@ -5,7 +5,7 @@
     aws_secret_key: "{{ vault.aws_secret_key }}"
     aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
-    state: "{{ vpc.state }}"
+    state: present 
     cidr_block: "{{ vpc.cidr_block }}"
     internet_gateway: "{{ vpc.gateway }}"
     resource_tags: "{{ vpc.resource_tags }}"
