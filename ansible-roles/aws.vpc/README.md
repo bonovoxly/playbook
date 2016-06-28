@@ -1,32 +1,64 @@
-Role Name
+aws.vpc
 =========
 
-A brief description of the role goes here.
+Builds an AWS VPC with subnets.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Boto and any software required to run Ansible AWS cloud modules.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Variables required are:
+
+- `vault.aws_secret_key`
+  - AWS secret key.
+- `vault.aws_access_key`
+  - AWS access key
+- `vpc.region`
+  - VPC region, defined in the `vpc` dictionary.
+- `vpc.cidr_block`
+  - The VPC CIDR block. Usually a /16.
+- `vpc.gateway`
+  - The Internet gateway.  Yes or No.
+- `vpc.resource_tags`
+  - Dictionary of AWS tags.
+- `vpc.subnets`
+  - A list of dictionaries.
+- `vpc.subnets.cidr`
+ - The subnet CIDR address.
+- `vpc.subnets.az`
+  - The availability zone.
+- `vpc.subnets.resource_tags`
+  - Tags for the subnets.
+- `vpc.subnets.resource_tags.Name`
+  - Name of the subnet.
+- `vpc.subnets.resource_tags.Route`
+  - This is used to determine NAT or Internet gateway routing.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- hosts: localhost
+  connection: local
+  gather_facts: yes
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
+  roles:
+    - role: load_variables
+      variables:
+        - vars/aws_infrastructure.yml
+        - vars/vault.yml
+    # Create and configure VPC
+    - role: aws.vpc
+```
 License
 -------
 
@@ -35,4 +67,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Bill Cawthra - http://bonovoxly.github.io/
