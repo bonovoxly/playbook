@@ -9,10 +9,6 @@
 - name: Remove previous SSH config settings for this organization.
   shell: "sed -i.ansible_backup '/^# {{ vpc.resource_tags.Organization }}/,/^# {{ vpc.resource_tags.Organization }}/d' {{ ansible_env.HOME }}/.ssh/config"
 
-# - name: Set CIDR subnet fact.
-#   set_fact:
-#     CIDR_fact: "{{ vpc.cidr_block
-
 # NOTE.  IF YOU USE VIRGINIA, IT WILL BE EC2.INTERNAL, NOT COMPUTE.INTERNAL
 - name: Configure SSH proxy host.
   blockinfile:
@@ -41,10 +37,6 @@
   environment:
     AWS_ACCESS_KEY_ID: "{{ vault.aws_access_key }}"
     AWS_SECRET_ACCESS_KEY: "{{ vault.aws_secret_key }}"
-
-- name: debug
-  debug:
-    msg: "{{ host_key_results.results }}"
 
 - name: Import SSH fingerpints - private IP addresses.
   lineinfile:
