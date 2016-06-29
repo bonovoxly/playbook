@@ -13,5 +13,5 @@
 
 - name: Pause when new IAM roles are created.
   pause:
-    seconds: 5
+    seconds: 7
   when: iam_results.changed
