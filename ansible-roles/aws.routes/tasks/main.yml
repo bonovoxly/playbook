@@ -9,22 +9,6 @@
     vpc_id: "{{ vpc_id_fact }}"
   register: igw_results
 
-- name: Get private routing table.
-  ec2_vpc_route_table_facts:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
-    region: "{{ vpc.region }}"
-    filters:
-      "tag:Name": "{{ vpc.private_route.resource_tags.Name }}"
-
-- name: Get public routing table.
-  ec2_vpc_route_table_facts:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
-    region: "{{ vpc.region }}"
-    filters:
-      "tag:Name": "{{ vpc.public_route.resource_tags.Name }}"
-
 - name: Create private route.
   ec2_vpc_route_table:
     aws_secret_key: "{{ vault.aws_secret_key }}"
