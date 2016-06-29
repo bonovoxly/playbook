@@ -1,31 +1,55 @@
-Role Name
+localhost.ssh_init
 =========
 
-A brief description of the role goes here.
+Retreives the SSH keys for all instances and adds them to the localhost's `~/.ssh/known_hosts` file.  Does the following:
+- Touches the `~/.ssh/config` file.
+- Removes previous entries out of `~/.ssh/config` by searching for text within the comments `# {{ vpc.resource_tags.Organization }}`.
+- Adds a SSH proxy command within `# {{ vpc.resource_tags.Organization }}`.
+- Removes all commented `~/.ssh/known_hosts` entries with `# {{ vpc.resource_tags.Organization }}`
+- Gets the SSH fingerprints for all instances using `aws ec2 get-console-output`.
+- Imports the private and public IP address and fingerpints for those instances into `~/.ssh/known_hosts`.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Boto and any software required to run Ansible AWS cloud modules. Uses the AWS CLI.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- `vault.aws_secret_key`
+  - AWS secret key.
+- `vault.aws_access_key`
+  - AWS access key
+- `vpc`
+  - The `vpc` dictionary.
+- `ec2_facts`
+  - From the role `aws.ec2_facts`.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- `aws.ec2_facts`
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- hosts: localhost
+  connection: local
+  gather_facts: yes
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  roles:
+    - role: load_variables
+      variables:
+        - vars/aws_infrastructure.yml
+        - vars/internal_instances.yml
+        - vars/vault.yml
+    - role: aws.ec2_facts
+      filters:
+        "tag:Organization": b_dev
+    - role: localhost.ssh_init
+```
 
 License
 -------
@@ -35,4 +59,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Bill Cawthra - http://bonovoxly.github.io/

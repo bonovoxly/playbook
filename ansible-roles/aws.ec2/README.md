@@ -1,31 +1,52 @@
-Role Name
+aws.ec2
 =========
 
-A brief description of the role goes here.
+Creates any number of EC2 instances based upon a list of dictionaries. Does the following:
+- Gets subnet facts for each dictionary in the `ec2` list.
+- Based on the list of dictionaries of the result (`ec2_vpc_subnet_facts`) and the list of dictionaries in `ec2`, creates instances in the appropriate subnets.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Boto and any software required to run Ansible AWS cloud modules.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- `vault.aws_secret_key`
+  - AWS secret key.
+- `vault.aws_access_key`
+  - AWS access key
+- `vpc.region`
+  - VPC region, defined in the `vpc` dictionary.
+- `ec2`
+  - A list of dictionaries containing instance settings.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- hosts: localhost
+  connection: local
+  gather_facts: yes
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  roles:
+  - role: load_variables
+    variables:
+      - vars/aws_infrastructure.yml
+      - vars/bastionhost.yml
+      - vars/vault.yml
+  - role: aws.ec2
+    filters:
+      "tag:TagValue": KeyValue
+  - role: aws.bastionhost
+  - role: aws.securitygroups
+```
 
 License
 -------
@@ -35,4 +56,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Bill Cawthra - http://bonovoxly.github.io/
