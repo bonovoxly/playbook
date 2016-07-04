@@ -6,13 +6,13 @@
   connection: local
   gather_facts: yes
 
+  vars_files:
+    - vars/aws_infrastructure.yml
+    - vars/bastionhost.yml
+    - vars/internal_instances.yml
+    - vars/vault.yml
+
   roles:
-    - role: load_variables
-      variables:
-        - vars/aws_infrastructure.yml
-        - vars/bastionhost.yml
-        - vars/internal_instances.yml
-        - vars/vault.yml
     - role: aws.vpc
     - role: aws.vpc_facts
       filters:
@@ -48,10 +48,10 @@
   remote_user: ubuntu
   gather_facts: yes
 
+  vars_files:
+    - vars/aws_infrastructure.yml
+
   roles:
-    - role: load_variables
-      variables:
-        - vars/aws_infrastructure.yml
     - role: bastionhost.nat_config
 
 #####
@@ -73,8 +73,8 @@
   remote_user: ubuntu
   gather_facts: yes
 
+  vars_files:
+    - vars/aws_infrastructure.yml
+
   roles:
-    - role: load_variables
-      variables:
-        - vars/aws_infrastructure.yml
-    - role: instance.install_apache
+    - role: instance.apache_install
