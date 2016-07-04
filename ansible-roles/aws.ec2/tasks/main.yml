@@ -1,0 +1,34 @@
+---
+# tasks file for aws.ec2
+- name: Get subnet ID based on subnet variable in ec2 dictionary.
+  ec2_vpc_subnet_facts:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc.region }}"
+    filters:
+      "tag:Name": "{{ item.subnet }}"
+  register: ec2_vpc_subnet_facts
+  with_items: "{{ ec2 }}"
+
+- name: Create instances.
+  ec2:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc.region }}"
+    assign_public_ip: "{{ item.0.assign_public_ip }}"
+    exact_count: "{{ item.0.exact_count }}"
+    count_tag: "{{ item.0.count_tag }}"
+    keypair: "{{ item.0.keypair }}"
+    group: "{{ item.0.groups }}"
+    instance_profile_name: "{{ item.0.instance_profile_name }}"
+    instance_tags: "{{ item.0.instance_tags }}"
+    instance_type: "{{ item.0.instance_type }}"
+    image: "{{ vpc.image }}"
+    termination_protection: "{{ item.0.termination_protection }}"
+    tenancy: "{{ item.0.tenancy }}"
+    vpc_subnet_id: "{{ item.1.subnets|map(attribute='id')|list|random }}"
+    wait: "{{ item.0.wait }}"
+  register: ec2_results
+  with_together:
+    - "{{ ec2 }}"
+    - "{{ ec2_vpc_subnet_facts.results }}"

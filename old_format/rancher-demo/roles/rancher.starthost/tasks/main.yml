@@ -1,0 +1,10 @@
+---
+# tasks file for rancher.starthost
+- name: Run Rancher Host agent.
+  docker:
+    command: "http://{{ rancher_private_ip_fact_vars }}:8080/v1/scripts/{{ registration_token_fact_vars }}"
+    image: "rancher/agent"
+    state: started
+    volumes:
+    - '/var/run/docker.sock:/var/run/docker.sock'
+    - '/var/lib/rancher:/var/lib/rancher'

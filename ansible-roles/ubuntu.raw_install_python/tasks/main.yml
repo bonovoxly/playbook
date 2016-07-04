@@ -1,0 +1,4 @@
+---
+# tasks file for ubuntu.raw_install_python
+- name: Install Python and Aptitude using the Ansible raw command.
+  raw: apt-get update && apt-get -y install python aptitude

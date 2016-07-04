@@ -1,0 +1,80 @@
+---
+#####
+# Initial AWS deployment
+#####
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  vars_files:
+    - vars/aws_infrastructure.yml
+    - vars/bastionhost.yml
+    - vars/internal_instances.yml
+    - vars/vault.yml
+
+  roles:
+    - role: aws.vpc
+    - role: aws.vpc_facts
+      filters:
+        "tag:Organization": b_dev
+    - role: aws.bastionhost
+    - role: aws.routes
+    - role: aws.securitygroups
+    - role: aws.iam
+    - role: aws.ec2
+    - role: aws.ec2_facts
+      filters:
+        "tag:Organization": b_dev
+    - role: localhost.ssh_init
+    - role: ansible.groups_init
+
+
+#####
+# Initial raw configuration for bastionhost
+#####
+- hosts: bastionhost_public
+  become: yes
+  gather_facts: no
+  user: ubuntu
+
+  roles:
+    - role: ubuntu.raw_install_python
+
+#####
+# Configure NAT instance
+#####
+- hosts: bastionhost_public
+  become: yes
+  remote_user: ubuntu
+  gather_facts: yes
+
+  vars_files:
+    - vars/aws_infrastructure.yml
+
+  roles:
+    - role: bastionhost.nat_config
+
+#####
+# Initial raw configuration for ALL instances
+#####
+- hosts: internal_system_private
+  become: yes
+  remote_user: ubuntu
+  gather_facts: no
+
+  roles:
+    - role: ubuntu.raw_install_python
+
+#####
+# Configure NAT instance
+#####
+- hosts: internal_system_private
+  become: yes
+  remote_user: ubuntu
+  gather_facts: yes
+
+  vars_files:
+    - vars/aws_infrastructure.yml
+
+  roles:
+    - role: instance.apache_install

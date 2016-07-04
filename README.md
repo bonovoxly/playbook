@@ -1,5 +1,9 @@
-# playbooks
-A collection of Ansible playbooks developed.  Credentials are stored in an Ansible vault, usually in ```group_vars/all/vault.yml``` or host_vars/127.0.0.1/vault.yml```.
+# playbook - Ansible Playbooks (new organization)
+A collection of Ansible playbooks developed.  New structure has been created:
+- [ansible-playbooks](https://github.com/bonovoxly/playbook/tree/master/ansible-playbooks) directory - containers folders of playbooks.
+- [ansible-roles](https://github.com/bonovoxly/playbook/tree/master/ansible-roles) directory - all shared roles.
+
+Credentials are stored in an Ansible vault, usually in ```vars/vault.yml```.  Vault file is not uploaded.
 
 - **[amibuilder](https://github.com/bonovoxly/playbook/tree/master/amibuilder)** - A playbook that builds role-based AMI images from a base AMI.
 - **[awsbackup](https://github.com/bonovoxly/playbook/tree/master/awsbackup)** - A playbook that snaphots selected instances, including rotation logic.
