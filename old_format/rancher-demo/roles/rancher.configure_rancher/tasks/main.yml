@@ -1,0 +1,69 @@
+---
+# tasks file for rancher.configure_rancher
+- name: Install python-httplib2.
+  yum:
+    name: python-httplib2
+    state: latest
+
+- name: Check for Rancher credentials file.
+  stat:
+    path: "/root/.rancher_credentials"
+  register: rancher_credentials_stat_fact
+
+- name: debug
+  debug:
+    msg: "{{ rancher_credentials_stat_fact.stat.exists }}"
+
+- name: Create environment API token if credentials file doesn't exist.
+  uri:
+    url: "http://localhost:8080/v1/projects/1a5/apikeys"
+    method: POST
+    status_code: 201
+  when: rancher_credentials_stat_fact.stat.exists == False
+  register: environment_api_fact
+
+- name: Create Rancher credentials file.
+  template:
+    src: ./files/rancher/.rancher_credentials.j2
+    dest: "/root/.rancher_credentials"
+    owner: "root"
+    group: "root"
+    mode: "0640"
+  when: rancher_credentials_stat_fact.stat.exists == False
+
+- name: Get environment API token.
+  shell: cat /root/.rancher_credentials
+  register: environment_api_token
+
+- name: Set environment_api_token fact.
+  set_fact:
+    environment_api_token_fact: "{{ environment_api_token.stdout }}"
+
+- name: Enable localAuth on Rancher.
+  shell: "curl -X POST -H 'Content-Type: application/json' http://localhost:8080/v1/localAuthConfig -d {{ vault_vars.rancher.localAuthConfig }} "
+  register: enable_localauth_fact
+  when: rancher_credentials_stat_fact.stat.exists == False
+
+- name: Check for number of tokens.
+  shell: curl -s -u {{ environment_api_token_fact }} -X GET http://localhost:8080/v1/projects/1a5/registrationtoken|python -m json.tool |grep token|grep -v localhost| awk -F'"' '{print $4}'|wc -l
+  register: number_of_tokens_facts
+
+- name: Create new token.
+  shell: curl -s -u {{ environment_api_token_fact }} -X POST http://localhost:8080/v1/projects/1a5/registrationtoken
+  when: number_of_tokens_facts.stdout|int == 0
+
+- name: Get token
+  shell: curl -s -u {{ environment_api_token_fact }} -X GET http://localhost:8080/v1/projects/1a5/registrationtoken|grep token| python -m json.tool |grep token|grep -v localhost| awk -F'"' '{print $4}'
+  register: registration_token_facts
+
+- name: Set token fact.
+  set_fact:
+    registration_token_fact: "{{ registration_token_facts.stdout }}"
+
+- name: Create Rancher registration token.
+  template:
+    src: ./files/rancher/.rancher_registration_token.j2
+    dest: "/root/.rancher_registration_token"
+    owner: "root"
+    group: "root"
+    mode: "0640"
