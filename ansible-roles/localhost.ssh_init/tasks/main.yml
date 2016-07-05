@@ -7,13 +7,13 @@
 
 # Couldn't get blockinfile with state = absent to work. Used multi-line sed instead.
 - name: Remove previous SSH config settings for this organization.
-  shell: "sed -i.ansible_backup '/^# {{ vpc.resource_tags.Organization }}/,/^# {{ vpc.resource_tags.Organization }}/d' {{ ansible_env.HOME }}/.ssh/config"
+  shell: "sed -i.ansible_backup '/^# {{ marker_vars|default(vpc.resource_tags.Organization) }}/,/^# {{ marker_vars|default(vpc.resource_tags.Organization) }}/d' {{ ansible_env.HOME }}/.ssh/config"
 
 # NOTE.  IF YOU USE VIRGINIA, IT WILL BE EC2.INTERNAL, NOT COMPUTE.INTERNAL
 - name: Configure SSH proxy host.
   blockinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/config"
-    marker: "# {{ vpc.resource_tags.Organization }}"
+    marker: "# {{ marker_vars|default(vpc.resource_tags.Organization) }}"
     block: |
       Host ip-{{ vpc.cidr_block.split('.')[0]}}-{{ vpc.cidr_block.split('.')[1]}}-*-*.compute.internal
            ProxyCommand ssh -i ~/.ssh/{{ vpc.keypair }} -W %h:%p -q {{ vpc.image_user }}@{{ bastion_public_dns_name }}
@@ -22,7 +22,7 @@
 - name: Remove all old known_hosts entries.
   lineinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
-    regexp: "^.* # {{ vpc.resource_tags.Organization }}"
+    regexp: "^.* # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
     state: absent
 
 - name: Get SSH key from AWS system log.
@@ -33,7 +33,7 @@
   register: host_key_results
   with_items: "{{ ec2_facts.instances }}"
   until: host_key_results.stdout != ''
-  retries: 50
+  retries: 75
   environment:
     AWS_ACCESS_KEY_ID: "{{ vault.aws_access_key }}"
     AWS_SECRET_ACCESS_KEY: "{{ vault.aws_secret_key }}"
@@ -41,7 +41,7 @@
 - name: Import SSH fingerpints - private IP addresses.
   lineinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
-    line: "{{ item.0.private_dns_name }},{{ item.0.private_ip_address }} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ vpc.resource_tags.Organization }}"
+    line: "{{ item.0.private_dns_name }},{{ item.0.private_ip_address }} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
   when: item.0.state == 'running'
   with_together:
     - "{{ ec2_facts.instances }}"
@@ -50,7 +50,7 @@
 - name: Import SSH fingerpints - public IP addresses.
   lineinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
-    line: "{{ item.0.public_dns_name}} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ vpc.resource_tags.Organization }}"
+    line: "{{ item.0.public_dns_name}} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
   when: item.0.state == 'running' and item.0.public_dns_name != ''
   with_together:
     - "{{ ec2_facts.instances }}"
