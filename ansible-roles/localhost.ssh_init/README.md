@@ -3,9 +3,9 @@ localhost.ssh_init
 
 Retreives the SSH keys for all instances and adds them to the localhost's `~/.ssh/known_hosts` file.  Does the following:
 - Touches the `~/.ssh/config` file.
-- Removes previous entries out of `~/.ssh/config` by searching for text within the comments `# {{ vpc.resource_tags.Organization }}`.
-- Adds a SSH proxy command within `# {{ vpc.resource_tags.Organization }}`.
-- Removes all commented `~/.ssh/known_hosts` entries with `# {{ vpc.resource_tags.Organization }}`
+- Removes previous entries out of `~/.ssh/config` by searching for text within the comments `# {{ marker_vars|default(vpc.resource_tags.Organization) }}`. Note that `marker_vars` can be passed into the role to override the default.
+- Adds a SSH proxy command within `# {{ marker_vars|default(vpc.resource_tags.Organization) }}`.
+- Removes all commented `~/.ssh/known_hosts` entries with `# {{ marker_vars|default(vpc.resource_tags.Organization) }}`
 - Gets the SSH fingerprints for all instances using `aws ec2 get-console-output`.
 - Imports the private and public IP address and fingerpints for those instances into `~/.ssh/known_hosts`.
 
