@@ -11,7 +11,7 @@
     vpc_id: "{{ vpc_id_fact }}"
   register: bastionhost_inbound_results
 
-- name: Tag nat inbound traffic rules.
+- name: Tag bastionhost inbound traffic rules.
   ec2_tag:
     aws_secret_key: "{{ vault.aws_secret_key }}"
     aws_access_key: "{{ vault.aws_access_key }}"
@@ -48,14 +48,31 @@
     wait: "{{ ec2_bastionhost.wait }}"
   register: bastionhost_instance_results
 
+- name: Create bastionhost SSH inbound rules for internal instances.
+  ec2_group:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc.region }}"
+    description: "{{ securitygroups_bastionhost_internal.tags.Name }} SSH rules."
+    name: "{{ securitygroups_bastionhost_internal.name }}"
+    rules:
+    vpc_id: "{{ vpc_id_fact }}"
+  register: bastionhost_inbound_internal_results
+
+- name: Tag bastionhost SSH inbound rules for internal instancensn.
+  ec2_tag:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc.region }}"
+    resource: "{{ bastionhost_inbound_internal_results.group_id }}"
+    state: present
+    tags: "{{ securitygroups_bastionhost_internal.tags }}"
+
+
 - name: Set public DNS fact.
   set_fact:
     bastion_public_dns_name: "{{ bastionhost_instance_results.tagged_instances.0.public_dns_name }}"
 
-- name: Set public IP address fact.
-  set_fact:
-    bastion_public_ip: "{{ bastionhost_instance_results.tagged_instances.0.public_ip }}"
-
 - name: Print public IP address.
   debug:
-    msg: "bastionhost public IP address: {{ bastion_public_dns_name }}"
+    msg: "bastionhost public DNS: {{ bastion_public_dns_name }}"
