@@ -2,7 +2,7 @@
 # AWS settings
 # Route53 settings
 route53:
-  domain: aws.internal
+  domain: us-west-2.compute.internal
 # VPC settings
 vpc:
   name: aws
