@@ -53,23 +53,7 @@ securitygroups_bastionhost:
     Environment: "aws"
 securitygroups_bastionhost_internal:
   name: bastionhost_inbound_internal
-  rules:
-    - proto: tcp
-      from_port: 22
-      to_port: 22
-      cidr_ip: "0.0.0.0/0"
-    - proto: icmp
-      from_port: -1
-      to_port: -1
-      cidr_ip: 10.148.0.0/16
-    - proto: tcp
-      from_port: 80
-      to_port: 80
-      cidr_ip: 10.148.0.0/16
-    - proto: tcp
-      from_port: 443
-      to_port: 443
-      cidr_ip: 10.148.0.0/16
+  # no rules, those are dynamically created with the aws.bastionhost role
   tags:
     Name: "bastionhost_inbound_internal"
     Organization: b_dev
