@@ -26,6 +26,7 @@
       filters:
         "tag:Organization": b_dev
     - role: localhost.ssh_init
+      bastion_vars: "{{ bastion_public_dns_name }}"
     - role: ansible.groups_init
 
 
