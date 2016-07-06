@@ -56,6 +56,10 @@
     description: "{{ securitygroups_bastionhost_internal.tags.Name }} SSH rules."
     name: "{{ securitygroups_bastionhost_internal.name }}"
     rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ bastionhost_instance_results.tagged_instances.0.private_ip }}/32"
     vpc_id: "{{ vpc_id_fact }}"
   register: bastionhost_inbound_internal_results
 
