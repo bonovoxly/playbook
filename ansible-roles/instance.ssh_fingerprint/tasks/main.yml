@@ -1,0 +1,7 @@
+---
+# tasks file for instance.ssh_fingerprint
+- name: Add SSH fingerprint to AWS System Log.
+  lineinfile:
+    dest: /etc/rc.local
+    insertbefore: 'exit 0'
+    line: '/usr/bin/ssh-keygen -y -f /etc/ssh/ssh_host_ecdsa_key'
