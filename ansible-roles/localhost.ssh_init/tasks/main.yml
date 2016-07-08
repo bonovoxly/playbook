@@ -29,7 +29,7 @@
   shell: aws ec2 get-console-output \
            --region {{ vpc.region }} \
            --instance-id {{ item.id }} \
-           --output text | sed -n 's/ecdsa-sha2-nistp256 \([^ ]*\).*/\1/p'
+           --output text | sed -n 's/^.*\(ecdsa-sha2-nistp256 \)\(.*\)/\2/p' | awk '{print $1}'
   register: host_key_results
   with_items: "{{ ec2_facts.instances }}"
   until: host_key_results.stdout != ''
