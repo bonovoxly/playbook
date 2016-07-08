@@ -53,6 +53,7 @@
     - vars/aws_infrastructure.yml
 
   roles:
+    - role: instance.ssh_fingerprint
     - role: bastionhost.nat_config
 
 #####
@@ -78,4 +79,5 @@
     - vars/aws_infrastructure.yml
 
   roles:
+    - role: instance.ssh_fingerprint
     - role: instance.apache_install
