@@ -1,6 +1,6 @@
 ---
 # tasks file for instance.ssh_fingerprint
-- name: Add SSH fingerprint to AWS System Log.
+- name: Add SSH public key to AWS System Log.
   lineinfile:
     dest: /etc/rc.local
     insertbefore: 'exit 0'
