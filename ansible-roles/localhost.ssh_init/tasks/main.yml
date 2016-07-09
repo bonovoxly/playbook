@@ -25,7 +25,7 @@
     regexp: "^.* # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
     state: absent
 
-- name: Get SSH key from AWS system log.
+- name: Add SSH public key to AWS System Log.
   shell: aws ec2 get-console-output \
            --region {{ vpc.region }} \
            --instance-id {{ item.id }} \
@@ -38,7 +38,7 @@
     AWS_ACCESS_KEY_ID: "{{ vault.aws_access_key }}"
     AWS_SECRET_ACCESS_KEY: "{{ vault.aws_secret_key }}"
 
-- name: Import SSH fingerpints - private IP addresses.
+- name: Import SSH public keys - private IP addresses.
   lineinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
     line: "{{ item.0.private_dns_name }},{{ item.0.private_ip_address }} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
@@ -47,7 +47,7 @@
     - "{{ ec2_facts.instances }}"
     - "{{ host_key_results.results }}"
 
-- name: Import SSH fingerpints - public IP addresses.
+- name: Import SSH public keys - public IP addresses.
   lineinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
     line: "{{ item.0.public_dns_name}} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
