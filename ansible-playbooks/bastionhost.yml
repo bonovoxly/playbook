@@ -25,8 +25,9 @@
     - role: aws.ec2_facts
       filters:
         "tag:Organization": b_dev
-    - role: localhost.ssh_init
+    - role: localhost.bastion_ssh_config
       bastion_vars: "{{ bastion_public_dns_name }}"
+    - role: localhost.aws_ssh_keys
     - role: ansible.groups_init
 
 
