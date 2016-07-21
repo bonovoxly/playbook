@@ -1,0 +1,43 @@
+---
+# tasks file for localhost.aws_ssh_keys
+- name: Touch known_hosts file.
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    state: touch
+
+- name: Remove all old known_hosts entries.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    regexp: "^.* # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
+    state: absent
+
+- name: Add SSH public key to AWS System Log.
+  shell: aws ec2 get-console-output \
+           --region {{ vpc.region }} \
+           --instance-id {{ item.id }} \
+           --output text | sed -n 's/^.*\(ecdsa-sha2-nistp256 \)\(.*\)/\2/p' | awk '{print $1}'
+  register: host_key_results
+  with_items: "{{ ec2_facts.instances }}"
+  until: host_key_results.stdout != ''
+  retries: 75
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ vault.aws_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ vault.aws_secret_key }}"
+
+- name: Import SSH public keys - private IP addresses.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    line: "{{ item.0.private_dns_name }},{{ item.0.private_ip_address }} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
+  when: item.0.state == 'running'
+  with_together:
+    - "{{ ec2_facts.instances }}"
+    - "{{ host_key_results.results }}"
+
+- name: Import SSH public keys - public IP addresses.
+  lineinfile:
+    dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+    line: "{{ item.0.public_dns_name}} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(vpc.resource_tags.Organization) }}"
+  when: item.0.state == 'running' and item.0.public_dns_name != ''
+  with_together:
+    - "{{ ec2_facts.instances }}"
+    - "{{ host_key_results.results }}"
