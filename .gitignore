@@ -62,3 +62,11 @@ working/*
 ################
 .travis.yml
 *.retry
+
+# Python Environment #
+######################
+env/*
+
+# ansible-container build directory #
+#####################################
+ansible-container/ansible-container/*
