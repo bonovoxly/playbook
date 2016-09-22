@@ -1,0 +1,15 @@
+apt:
+  - curl
+  - dnsutils
+  - iputils-ping
+  - zsh
+  - groff
+  - vim
+  - sudo
+  - python-dev
+  - libffi-dev
+  - libssl-dev
+  - libxml2-dev
+  - libxslt1-dev
+  - python-pip
+  - git
