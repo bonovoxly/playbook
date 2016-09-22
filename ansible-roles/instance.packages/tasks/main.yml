@@ -1,0 +1,8 @@
+---
+# tasks file for instance.packages
+- name: Install base packages.
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ apt_packages_vars }}"
+  when: apt_packages_vars is defined
