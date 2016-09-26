@@ -11,7 +11,7 @@ None.
 Role Variables
 --------------
 
-- `apt_packages_vars` - list of apt packages to install.
+- `apt_packages` - list of apt packages to install.
 
 Dependencies
 ------------
