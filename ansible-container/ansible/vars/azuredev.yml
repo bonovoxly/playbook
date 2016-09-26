@@ -1,0 +1,12 @@
+
+apt_packages:
+  - unzip
+  - npm
+
+npm_packages:
+  - azure-cli
+
+users:
+  - name: azure-user
+    shell: /bin/zsh
+    groups: sudo
