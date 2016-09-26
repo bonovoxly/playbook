@@ -1,15 +1,19 @@
-apt:
+
+apt_packages:
   - curl
   - dnsutils
-  - iputils-ping
-  - zsh
+  - git
   - groff
-  - vim
-  - sudo
-  - python-dev
+  - iputils-ping
   - libffi-dev
   - libssl-dev
   - libxml2-dev
   - libxslt1-dev
+  - python-dev
   - python-pip
-  - git
+  - sudo
+  - vim
+  - zsh
+
+pip_packages:
+  - pip
