@@ -20,44 +20,26 @@
 #     - name: Install Apache
 #       apt: name=apache2 state=latest
 
+# all development containers need certain packages.
 - hosts: awsdev:azuredev:generaldev
   gather_facts: false
 
   vars_files:
-    - vars/all.yml
+    - vars/dev.yml
 
   roles:
     - role: ubuntu.raw_install_python
     - role: instance.packages
-      apt_packages_vars: "{{ apt }}"
-  tasks:
-    - name: Create user.
-      user:
-        name: "{{ username }}"
-        shell: /bin/zsh
-        groups: sudo
 
-# # azure host
-# - hosts: azure
-#   gather_facts: false
-#   tasks:
-#     - name: Install Azure specific packages.
-#       apt:
-#         name: "{{ item }}"
-#         state: latest
-#       with_items:
-#         - unzip
-#         - npm
-#     - name: Install pip packages.
-#       pip:
-#         name: "{{ item }}"
-#         state: latest
-#       with_items:
-#         - pip
-#     - name: Install npm Azure CLI.
-#       npm:
-#         name: "{{ item }}"
-#         global: yes
-#         state: latest
-#       with_items:
-#         - azure-cli
+# azure host
+- hosts: azuredev
+  gather_facts: false
+
+  vars_files:
+    - vars/azuredev.yml
+
+  roles:
+    - role: instance.packages
+    - role: instance.add_user
+      users_vars: "{{ users }}"
+    - role: instance.terraform_install
