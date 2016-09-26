@@ -1,0 +1,8 @@
+---
+# tasks file for instance.add_user
+- name: Create users from list.
+  user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell }}"
+    groups: "{{ item.groups }}"
+  with_items: "{{ users_vars }}"
