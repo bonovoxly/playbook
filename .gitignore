@@ -69,5 +69,6 @@ env/*
 
 # ansible-container build directory #
 #####################################
+ansible-container/ansible-container
 ansible-container/ansible-container/*
 ansible-container/env/*
