@@ -1,6 +1,6 @@
 
 apt_packages:
-  - unzip
+  - ansible
   - npm
 
 npm_packages:
