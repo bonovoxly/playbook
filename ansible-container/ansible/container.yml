@@ -12,16 +12,15 @@ services:
   #     environment:
   #       - "DEBUG=1"
   #
-  awsdev:
-    image: ubuntu:16.04
   azuredev:
     image: ubuntu:16.04
-  generaldev:
+  awsdev:
     image: ubuntu:16.04
+# registries: {}
 registries:
   docker:
-    url: https://hub.docker.com
-    namespace: bcawthra/development
+    url: {{ docker_url }}
+    namespace: {{ docker_namespace }}
   # Add optional registries used for deployment. For example:
   #  google:
   #    url: https://gcr.io
