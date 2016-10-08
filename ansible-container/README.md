@@ -33,13 +33,19 @@ Note these use cases are a bit unique and solve a particular niche issue.  Howev
 
 ```
 % ansible-container version
-Ansible Container, version 0.2.0-pre
+Ansible Container, version 0.2.0
 ```
 
 - To build the Docker images, run:
 
 ```
-ansible-container push --with-volumes /path/to/ansible-roles:/roles
+ansible-container build --with-volumes /path/to/ansible-roles:/roles
 ```
 
 Docker image should build.
+
+- To push the Docker images, run:
+
+```
+ansible-container --debug push --with-volumes /full/path/to/playbook/ansible-roles:/roles --with-variables docker_url=https://YOUR.DOCKERREGISTRY.COM,docker_namespace=YOURNAMESPACE
+```
