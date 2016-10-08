@@ -1,0 +1,13 @@
+
+pip_packages:
+  - markupsafe
+  - boto
+  - boto3
+  - ansible
+  - awscli
+  - dnspython
+
+users:
+  - name: aws-user
+    shell: /bin/zsh
+    groups: sudo
