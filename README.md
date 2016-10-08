@@ -5,8 +5,11 @@ A collection of Ansible playbooks developed.  New structure has been created:
 
 Credentials are stored in an Ansible vault, usually in ```vars/vault.yml```.  Vault file is not uploaded.
 
-Playbooks:
+Ansible playbooks:
 - **[bastionhost](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/bastionhost.yml)** - A playbook that creates a bastion host, allowing SSH access to private instances within a VPC.
+
+Ansible-container:
+- **[ansible-container](https://github.com/bonovoxly/playbook/tree/master/ansible-container)** - A quick demo of ansible-container, creating an AWS interactive Docker image and Azure Docker image.
 
 Old format:
 - **[amibuilder](https://github.com/bonovoxly/playbook/tree/master/old_format/amibuilder)** - A playbook that builds role-based AMI images from a base AMI.
