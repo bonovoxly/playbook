@@ -13,6 +13,7 @@ apt_packages:
   - python-pip
   - sudo
   - vim
+  - unzip
   - zsh
 
 pip_packages:
