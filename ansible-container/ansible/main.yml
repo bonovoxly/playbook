@@ -21,7 +21,7 @@
 #       apt: name=apache2 state=latest
 
 # all development containers need certain packages.
-- hosts: awsdev:azuredev:generaldev
+- hosts: all
   gather_facts: false
 
   vars_files:
@@ -37,6 +37,19 @@
 
   vars_files:
     - vars/azuredev.yml
+
+  roles:
+    - role: instance.packages
+    - role: instance.add_user
+      users_vars: "{{ users }}"
+    - role: instance.terraform_install
+
+# aws host
+- hosts: awsdev
+  gather_facts: false
+
+  vars_files:
+    - vars/awsdev.yml
 
   roles:
     - role: instance.packages
