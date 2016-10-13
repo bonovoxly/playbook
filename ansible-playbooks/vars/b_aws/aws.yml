@@ -1,0 +1,34 @@
+---
+# AWS settings for b_aws
+# Route53 settings
+route53:
+  domain: ec2.internal
+# VPC settings
+vpc:
+  name: aws
+  cidr_block: 10.44.0.0/16
+  gateway: yes
+  image: ami-3ab1fa2d
+  image_user: ubuntu
+  keypair: "{{ keypair | default('defaultkey') }}"
+  region: us-east-1
+  resource_tags:
+    Name: b_aws_VPC
+    Organization: b_aws
+    Environment: aws
+  subnets:
+    - cidr: 10.44.0.0/24
+      az: us-east-1b
+      resource_tags:
+        Name: b_aws_public
+        Organization: b_aws
+        Environment: aws
+        Role: public_subnet
+        Route: public
+  public_route:
+    routes:
+      dest: 0.0.0.0/0
+    resource_tags:
+      Name: aws_external_route
+      Organization: b_dev
+      Environment: aws
