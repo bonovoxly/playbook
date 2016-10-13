@@ -21,6 +21,7 @@
         instance_id: "{{ bastionhost_instance_results.tagged_instances.0.id }}"
     tags: "{{ vpc.private_route.resource_tags }}"
     vpc_id: "{{ vpc_id_fact }}"
+  when: vpc.private_route is defined and vpc.private_route != ''
 
 - name: Create public route.
   ec2_vpc_route_table:
@@ -34,3 +35,4 @@
         gateway_id: "{{ igw_results.gateway_id }}"
     tags: "{{vpc.public_route.resource_tags }}"
     vpc_id: "{{ vpc_id_fact }}"
+  when: vpc.public_route is defined and vpc.public_route != ''
