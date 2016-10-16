@@ -1,12 +1,13 @@
 ---
 # AWS settings for b_aws
+# cidr value (can be overridden via -e)
+cidr: '10.44'
 # Route53 settings
 route53:
   domain: ec2.internal
 # VPC settings
 vpc:
-  name: aws
-  cidr_block: 10.44.0.0/16
+  cidr_block: "{{ cidr }}.0.0/16"
   gateway: yes
   image: ami-3ab1fa2d
   image_user: ubuntu
@@ -17,7 +18,7 @@ vpc:
     Organization: b_aws
     Environment: aws
   subnets:
-    - cidr: 10.44.0.0/24
+    - cidr: "{{ cidr }}.0.0/24"
       az: us-east-1b
       resource_tags:
         Name: b_aws_public
