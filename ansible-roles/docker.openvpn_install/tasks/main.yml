@@ -1,0 +1,49 @@
+---
+# tasks file for docker.openvpn_install
+- name: Install iptables and openvpn.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - iptables
+    - openvpn
+    - easy-rsa
+
+- name: Configure IP routing.
+  sysctl:
+    name: "net.ipv4.ip_forward"
+    value: 1
+
+- name: Copy easy-rsa configuration.
+  shell: cp /usr/share/easy-rsa/* /etc/openvpn/
+
+- name: Template easy-rsa files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/openvpn/{{ item }}"
+  with_items:
+    - vars
+
+- name: Copy non-interactive binaries.
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/openvpn/{{ item }}"
+    mode: 0700
+  with_items:
+    - build-ca-automated
+    - build-key-server-automated
+
+- name: Copy startup script.
+  copy:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+    mode: 0700
+  with_items:
+    - run.sh
+
+# - name: Template iptables configuration.
+#   template:
+#     src: "{{ item }}.j2"
+#     dest: "/etc/iptables/{{ item }}"
+#   with_items:
+#     - iptables
