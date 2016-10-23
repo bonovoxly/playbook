@@ -1,0 +1,15 @@
+---
+# handlers file for instance.automated_updates
+- name: enable_automated_updates
+  command: systemctl enable {{ item }}
+  with_items:
+    - automated-updates.service
+    - automated-updates.timer
+  notify:
+    - restart_automated_updates_timer
+
+- name: restart_automated_updates_timer
+  service:
+    name: automated-updates.timer
+    state: restarted
+    enabled: yes

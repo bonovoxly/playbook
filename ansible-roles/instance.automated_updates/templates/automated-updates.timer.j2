@@ -1,0 +1,9 @@
+[Unit]
+Description=Runs the Ubuntu automated updater ever {{ update_date }}.
+
+[Timer]
+OnCalendar={{ update_date }}
+Unit=automated-updates.service
+
+[Install]
+WantedBy=multi-user.target
