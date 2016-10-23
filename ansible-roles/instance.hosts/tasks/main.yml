@@ -1,0 +1,23 @@
+---
+# tasks file for instance.hosts
+- name: Get current EC2 facts.
+  ec2_facts:
+  register: ec2_local_facts
+
+- name: Set AWS hostname fact.
+  set_fact:
+    aws_name: "{{ hostvars['127.0.0.1']['ec2_facts']['instances']
+            | selectattr('private_ip_address', 'equalto', ansible_ec2_local_ipv4)
+            | map(attribute='tags.Name')
+            | list
+            | first}}"
+
+- name: Add AWS hostname to /etc/hosts.
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "^127\\.0\\.0\\.1 {{ aws_name }}"
+    line: "127.0.0.1 {{ aws_name }}"
+
+- name: Set hostname.
+  hostname:
+    name: "{{ aws_name }}"
