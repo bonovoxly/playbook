@@ -1,12 +1,18 @@
 ---
 # tasks file for aws.securitygroups
-- name: Set fact - bastionhost SSH rules.
+- name: Set fact - bastionhost SSH rules (if defined).
   set_fact:
     bastionhost_ssh_rules:
       - proto: tcp
         from_port: '22'
         to_port: '22'
         cidr_ip: "{{ bastionhost_instance_results.tagged_instances.0.private_ip }}/32"
+  when: bastionhost_instance_results is defined
+
+- name: debug.
+  debug:
+    msg: "{{ item.name }}"
+  with_items: "{{ securitygroups }}"
 
 - name: Create security groups.
   ec2_group:
@@ -15,7 +21,7 @@
     region: "{{ vpc.region }}"
     description: "{{item.description }}"
     name: "{{ item.name }}"
-    rules: "{{ item.rules | union(bastionhost_ssh_rules)}}"
+    rules: "{{ item.rules | union(bastionhost_ssh_rules) }}"
     vpc_id: "{{ vpc_id_fact }}"
   register: securitygroups_results
   with_items: "{{ securitygroups }}"
