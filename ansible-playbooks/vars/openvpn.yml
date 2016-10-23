@@ -1,0 +1,42 @@
+---
+# Wordpress and mysql instances.
+# AWS instance settings. Note that they are list of dictionaries.
+ec2:
+  - assign_public_ip: yes
+    count_tag:
+      Name: openvpn
+    exact_count: 1
+    groups:
+      - ssh_inbound
+      - openvpn_inbound
+    instance_profile_name: openvpn_role
+    instance_tags:
+      Name: openvpn
+      Organization: "{{ env }}_aws"
+      Environment: aws
+      Role: vpn
+    instance_type: t2.nano
+    keypair: "{{ env }}"
+    subnet: "{{ env }}_public"
+    wait: yes
+# iam role
+iam:
+  - iam_type: role
+    name: openvpn_role
+    state: present
+securitygroups:
+  - name: openvpn_inbound
+    description: 'openvpn inbound rules'
+    rules:
+      - proto: udp
+        from_port: 1194
+        to_port: 1194
+        cidr_ip: "{{ vault.ip_address }}/32"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: "openvpn_inbound"
+      Organization: "{{ env }}_aws"
+      Environment: aws
