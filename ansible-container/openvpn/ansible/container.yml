@@ -1,0 +1,22 @@
+version: "1"
+services:
+  # Add your containers here, specifying the base image you want to build from
+  # For example:
+  #
+  # web:
+  #   image: ubuntu:trusty
+  #   ports:
+  #     - "80:80"
+  #   command: ['/usr/bin/dumb-init', '/usr/sbin/apache2ctl', '-D', 'FOREGROUND']
+  #   dev_overrides:
+  #     environment:
+  #       - "DEBUG=1"
+  #
+  openvpn:
+    image: ubuntu:16.04
+    command: ['/usr/sbin/openvpn', '--daemon', '--writepid', '/var/run/openvpn/server.pid', '--cd', '/etc/openvpn/', '--config', 'server.conf']
+# registries: {}
+registries:
+  docker:
+    url: {{ docker_url }}
+    namespace: {{ docker_namespace }}
