@@ -1,9 +1,9 @@
 #!/bin/bash
+
 if [ ! -f ./env/bin/activate ]; then
   virtualenv env
   source ./env/bin/activate
-  pip install -U boto boto3 ansible pip-review setuptools ansible-container
-#  pip install -U ansible-container
+  pip install boto ansible setuptools ansible-container
 fi
 
 echo "ansible-container installed and configured."

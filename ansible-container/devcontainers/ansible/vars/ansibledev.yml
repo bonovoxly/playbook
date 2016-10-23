@@ -2,6 +2,5 @@ pip_packages:
   - markupsafe
   - boto
   - boto3
-  - ansible
   - awscli
   - dnspython

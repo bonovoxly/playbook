@@ -11,3 +11,4 @@ users:
   - name: aws-user
     shell: /bin/zsh
     groups: sudo
+    shell_config: .zshrc

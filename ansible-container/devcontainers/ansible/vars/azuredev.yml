@@ -10,3 +10,4 @@ users:
   - name: azure-user
     shell: /bin/zsh
     groups: sudo
+    shell_config: .zshrc
