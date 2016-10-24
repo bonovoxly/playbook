@@ -1,7 +1,7 @@
 ---
 # AWS settings for mod_aws
 # cidr value (can be overridden via -e)
-cidr: '10.249'
+cidr: '10.231'
 # Route53 settings
 route53:
   domain: ec2.internal
@@ -14,22 +14,19 @@ vpc:
   keypair: "{{ keypair | default('mod') }}"
   region: us-east-1
   resource_tags:
-    Name: "{{ env }}_vpc"
-    Organization: "{{ env }}"
-    Environment: aws
+    Name: "mod_vpc"
+    Environment: mod
   subnets:
     - cidr: "{{ cidr }}.0.0/24"
       az: us-east-1b
       resource_tags:
-        Name: "{{ env }}_public"
-        Organization: "{{ env }}"
-        Environment: aws
+        Name: public
+        Environment: mod
         Role: public_subnet
         Route: public
   public_route:
     routes:
       dest: 0.0.0.0/0
     resource_tags:
-      Name: "{{ env }}_externalroute"
-      Organization: "{{ env }}"
-      Environment: aws
+      Name: public_route
+      Environment: mod
