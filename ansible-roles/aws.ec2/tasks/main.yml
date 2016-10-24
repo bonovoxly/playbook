@@ -33,3 +33,15 @@
   with_together:
     - "{{ ec2 }}"
     - "{{ ec2_vpc_subnet_facts.results }}"
+
+- name: If assign_elastic is defined, associate it with the instance.
+  ec2_eip:
+    aws_secret_key: "{{ vault.aws_secret_key }}"
+    aws_access_key: "{{ vault.aws_access_key }}"
+    region: "{{ vpc.region }}"
+    device_id: "{{ item.0.id}}"
+    ip: "{{ item.1.assign_elastic }}"
+  when: item.1.assign_elastic is defined
+  with_together:
+    - "{{ ec2_results.results.0.tagged_instances }}"
+    - "{{ ec2 }}"
