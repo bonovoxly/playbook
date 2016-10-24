@@ -1,5 +1,5 @@
 ---
-# AWS settings for b_aws
+# AWS settings for bravo_aws
 # cidr value (can be overridden via -e)
 cidr: '10.44'
 # Route53 settings
@@ -14,22 +14,19 @@ vpc:
   keypair: "{{ keypair | default('defaultkey') }}"
   region: us-east-1
   resource_tags:
-    Name: b_aws_VPC
-    Organization: b_aws
-    Environment: aws
+    Name: bravo_aws_VPC
+    Environment: bravo
   subnets:
     - cidr: "{{ cidr }}.0.0/24"
       az: us-east-1b
       resource_tags:
-        Name: b_aws_public
-        Organization: b_aws
-        Environment: aws
+        Name: public
+        Environment: bravo
         Role: public_subnet
         Route: public
   public_route:
     routes:
       dest: 0.0.0.0/0
     resource_tags:
-      Name: aws_external_route
-      Organization: b_dev
-      Environment: aws
+      Name: public_route
+      Environment: bravo
