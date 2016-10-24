@@ -9,11 +9,6 @@
         cidr_ip: "{{ bastionhost_instance_results.tagged_instances.0.private_ip }}/32"
   when: bastionhost_instance_results is defined
 
-- name: debug.
-  debug:
-    msg: "{{ item.name }}"
-  with_items: "{{ securitygroups }}"
-
 - name: Create security groups.
   ec2_group:
     aws_secret_key: "{{ vault.aws_secret_key }}"

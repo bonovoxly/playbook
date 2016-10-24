@@ -16,22 +16,23 @@
   gather_facts: yes
 
   vars_files:
-    - vars/{{ env }}/aws.yml
-    - vars/{{ env }}/vault.yml
+    - vars/{{ env }}_aws/aws.yml
+    - vars/{{ env }}_aws/vault.yml
     - vars/wordpress.yml
 
   roles:
     - role: aws.vpc
     - role: aws.vpc_facts
       filters:
-        "tag:Organization": "{{ env}}"
+        "tag:Environment" "{{ env }}"
     - role: aws.routes
     - role: aws.securitygroups
     - role: aws.iam
     - role: aws.ec2
     - role: aws.ec2_facts
       filters:
-        "tag:Organization": b_aws
+        "tag:Environment": "{{ env }}"
+        instance-state-name: running
     - role: localhost.aws_ssh_keys
     - role: ansible.groups_init
 
@@ -64,29 +65,5 @@
     - role: instance.automated_updates
       update_date: 'Tue, 07:00'
     - role: instance.hosts
-
-# #####
-# # Initial raw configuration for ALL instances
-# #####
-# - hosts: internal_system_private
-#   become: yes
-#   remote_user: ubuntu
-#   gather_facts: no
-#
-#   roles:
-#     - role: ubuntu.raw_install_python
-#
-# #####
-# # Configure NAT instance
-# #####
-# - hosts: internal_system_private
-#   become: yes
-#   remote_user: ubuntu
-#   gather_facts: yes
-#
-#   vars_files:
-#     - vars/aws_infrastructure.yml
-#
-#   roles:
-#     - role: instance.ssh_aws_public_key
-#     - role: instance.apache_install
+    - role: localhost.aws_ssh_keys
+    - role: ansible.groups_init
