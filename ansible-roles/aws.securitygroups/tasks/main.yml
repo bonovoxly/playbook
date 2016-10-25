@@ -1,5 +1,18 @@
 ---
 # tasks file for aws.securitygroups
+- name: Get current public IP address.
+  ipify_facts:
+  when: public_ip == 'true'
+
+- name: Set fact - create current public IP address SSH rules.
+  set_fact:
+    current_public_ip_rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ ipify_public_ip }}/32"
+  when: public_ip == 'true'
+
 - name: Set fact - bastionhost SSH rules (if defined).
   set_fact:
     bastionhost_ssh_rules:
@@ -16,7 +29,7 @@
     region: "{{ vpc.region }}"
     description: "{{item.description }}"
     name: "{{ item.name }}"
-    rules: "{{ item.rules | union(bastionhost_ssh_rules) }}"
+    rules: "{{ item.rules | union(bastionhost_ssh_rules) | union(current_public_ip_rules) }}"
     vpc_id: "{{ vpc_id_fact }}"
   register: securitygroups_results
   with_items: "{{ securitygroups }}"
