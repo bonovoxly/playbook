@@ -52,11 +52,11 @@
 
   roles:
     - role: instance.ssh_aws_public_key
-    - role: instance.docker_install
+    - role: instance.hosts
     - role: instance.automated_updates
       update_date: 'Tue, 07:00'
       reboot: true
-    - role: instance.hosts
+    - role: instance.docker_install
 
 # #####
 # # Initial raw configuration for ALL instances
