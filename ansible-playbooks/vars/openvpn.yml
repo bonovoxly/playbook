@@ -1,5 +1,7 @@
 ---
 # Wordpress and mysql instances.
+# docker settings
+openvpn_docker_image: bcawthra/openvpn-openvpn:20161023190213
 # AWS instance settings. Note that they are list of dictionaries.
 ec2:
   - assign_public_ip: no
@@ -23,6 +25,7 @@ iam:
   - iam_type: role
     name: openvpn_role
     state: present
+# security groups
 securitygroups:
   - name: openvpn_inbound
     description: 'openvpn inbound rules'
