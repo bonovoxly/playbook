@@ -11,18 +11,14 @@ Boto and any software required to run Ansible AWS cloud modules.
 Role Variables
 --------------
 
-- `vault.aws_secret_key`
-  - AWS secret key.
-- `vault.aws_access_key`
-  - AWS access key
-- `vpc.region`
-  - VPC region, defined in the `vpc` dictionary.
-- `vpc_id_fact`
-  - The VPC ID.
-- `securitygroups`
-  - A list of security group dictionaries.
-- `bastionhost_instance_results.tagged_instances.0.private_ip`
-  - The private IP address from creating the bastionhost instance.
+- `vault.aws_secret_key` - AWS secret key.
+- `vault.aws_access_key` - AWS access key.
+- `vpc.region` - VPC region, defined in the `vpc` dictionary.
+- `vpc_id_fact` - The VPC ID.
+- `securitygroups` - A list of security group dictionaries.
+- `bastionhost_instance_results.tagged_instances.0.private_ip` - The private IP address from creating the bastionhost instance.
+- `public_ip` - A true/false boolean that adds security rules to allow the current host SSH access.
+- `current_public_ip_rules` if `public_up` is set to `true`, it will add rules allowing the current host SSH access to the instance.
 
 Dependencies
 ------------
