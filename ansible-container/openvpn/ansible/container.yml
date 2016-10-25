@@ -14,7 +14,7 @@ services:
   #
   openvpn:
     image: ubuntu:16.04
-    command: ['/usr/sbin/openvpn', '--daemon', '--writepid', '/var/run/openvpn/server.pid', '--cd', '/etc/openvpn/', '--config', 'server.conf']
+    command: ['/run.sh']
 # registries: {}
 registries:
   docker:
