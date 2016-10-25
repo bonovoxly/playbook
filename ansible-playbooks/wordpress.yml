@@ -24,7 +24,7 @@
     - role: aws.vpc
     - role: aws.vpc_facts
       filters:
-        "tag:Environment" "{{ env }}"
+        "tag:Environment": "{{ env }}"
     - role: aws.routes
     - role: aws.securitygroups
     - role: aws.iam
@@ -65,5 +65,3 @@
     - role: instance.automated_updates
       update_date: 'Tue, 07:00'
     - role: instance.hosts
-    - role: localhost.aws_ssh_keys
-    - role: ansible.groups_init
