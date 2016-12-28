@@ -1,4 +1,4 @@
-localhost.ssh_init
+localhost.aws_ssh_keys
 =========
 
 Retreives the SSH keys for all instances and adds them to the localhost's `~/.ssh/known_hosts` file.  Does the following:
