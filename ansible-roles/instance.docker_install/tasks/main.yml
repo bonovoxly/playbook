@@ -25,21 +25,25 @@
     path: /etc/systemd/system/docker.service.d
     state: directory
     mode: 0755
+  register: docker_service_register
 
 - name: Configure Docker storage.
   template:
     src: storage.conf.j2
     dest: /etc/systemd/system/docker.service.d/storage.conf
     mode: 0644
-  notify:
-    - restart_docker
+  register: docker_storage_register
 
 - name: Reload Systemd.
   command: systemctl daemon-reload
 
-- name: Always notify Docker starter handler.
-  debug:
-    msg: "Trigger start_docker handler."
-  changed_when: true
-  notify:
-    - start_docker
+- name: Restart Docker.
+  service:
+    name: docker
+    state: restarted
+  when: docker_storage_register.changed or docker_service_register.changed
+
+- name: Ensure Docker is started.
+  service:
+    name: docker
+    state: started
