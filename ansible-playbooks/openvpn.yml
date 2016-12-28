@@ -1,7 +1,8 @@
 ---
 # openvpn.yml
 #
-# This playbook deploys an AWS infrastructure and two instances; a openvpn
+# This playbook deploys an OpenVPN server to AWS.  Use the `vpc_create.yml`
+#   if necessary to create the VPC, subnets, and routes.
 #
 #####
 # Initial AWS deployment
@@ -16,11 +17,9 @@
     - vars/openvpn.yml
 
   roles:
-    - role: aws.vpc
     - role: aws.vpc_facts
       filters:
         "tag:Environment": "{{ env }}"
-    - role: aws.routes
     - role: aws.securitygroups
     - role: aws.iam
     - role: aws.ec2
@@ -50,6 +49,9 @@
   gather_facts: yes
   remote_user: ubuntu
 
+  vars_files:
+    - vars/openvpn.yml
+
   roles:
     - role: instance.ssh_aws_public_key
     - role: instance.hosts
@@ -57,6 +59,8 @@
       update_date: 'Tue, 07:00'
       reboot: true
     - role: instance.docker_install
+    - role: instance.openvpn_configure
+    - role: instance.openvpn_create_user_config
 
 # #####
 # # Initial raw configuration for ALL instances
