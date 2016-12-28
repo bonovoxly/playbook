@@ -1,5 +1,5 @@
 ---
-# tasks file for instance.add_user
+# tasks file for linux.add_user
 - name: Create users from list.
   user:
     name: "{{ item.name }}"

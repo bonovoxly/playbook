@@ -1,5 +1,5 @@
 ---
-# tasks file for instance.packages
+# tasks file for linux.packages
 - name: Install apt packages (if defined).
   apt:
     name: "{{ item }}"

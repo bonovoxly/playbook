@@ -1,4 +1,4 @@
-instance.terraform_install
+linux.terraform_install
 =========
 
 Installs the Terraform package.

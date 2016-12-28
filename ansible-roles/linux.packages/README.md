@@ -1,4 +1,4 @@
-instance.packages
+linux.packages
 =========
 
 Installs variable packages when the lists are defined.  Hope to support apt, pip, and npm.

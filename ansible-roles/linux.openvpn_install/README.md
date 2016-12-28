@@ -1,4 +1,4 @@
-docker.openvpn_install
+linux.openvpn_install
 =========
 
 The role to configure OpenVPN in a Docker image.

@@ -1,4 +1,4 @@
-instance.add_user
+linux.add_user
 =========
 
 Creates users from a list of dictionaries.

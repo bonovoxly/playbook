@@ -1,15 +1,14 @@
 port 1194
 proto udp
 dev tun
-ca ca.crt
-cert server.crt
-key server.key
-dh dh2048.pem
+ca /etc/openvpn/keys/ca.crt
+cert /etc/openvpn/keys/openvpn.crt
+key /etc/openvpn/keys/openvpn.key
+dh /etc/openvpn/keys/dh2048.pem
 server 172.16.4.0 255.255.255.0
 ifconfig-pool-persist ipp.txt
-push "route 10.10.0.0 255.255.0.0"
 push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 10.10.0.2"
+push "dhcp-option DNS 8.8.8.8"
 keepalive 10 120
 cipher AES-128-CBC
 comp-lzo

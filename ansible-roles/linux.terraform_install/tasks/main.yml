@@ -1,5 +1,5 @@
 ---
-# tasks file for instance.terraform_install
+# tasks file for linux.terraform_install
 - name: Download Terraform.
   get_url:
     url: "https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip"
