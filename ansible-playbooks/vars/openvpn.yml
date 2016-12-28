@@ -1,16 +1,15 @@
 ---
 # Wordpress and mysql instances.
 # docker settings
-openvpn_docker_image: bcawthra/openvpn-openvpn:20161023190213
+openvpn_docker_image: modops/openvpn-openvpn:20161227201844
 # AWS instance settings. Note that they are list of dictionaries.
 ec2:
-  - assign_public_ip: no
-    assign_elastic: "{{ vault.elastic }}"
+  - assign_public_ip: yes
     count_tag:
       Name: openvpn
     exact_count: 1
     groups:
-      - openvpn_inbound
+      - "openvpn_inbound"
     instance_profile_name: openvpn_role
     instance_tags:
       Name: openvpn
