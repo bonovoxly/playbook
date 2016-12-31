@@ -1,0 +1,10 @@
+[Unit]
+Description={{ openvpn_docker_image }} image downloader
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker pull {{ openvpn_docker_image }}
+
+[Install]
+WantedBy=multi-user.target

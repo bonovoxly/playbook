@@ -1,0 +1,51 @@
+---
+# tasks file for instance.openvpn_configure
+# - name: Get private IP address.
+#   set_fact:
+#     OVPN_SERVER: "{{ hostvars['127.0.0.1']['ec2_facts']['instances']
+#                  | selectattr('tags.Name', 'equalto', 'openvpn')
+#                  | map(attribute='private_ip_address')
+#                  | list
+#                  | first }}"
+
+- name: Create openvpn directory.
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /data/openvpn/keys
+    - /data/openvpn/logs
+
+- name: Template openvpn systemd files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - openvpn-download.service
+    - openvpn.service
+  register: openvpn_systemd_register
+
+- name: Reload systemd
+  command: systemctl daemon-reload
+
+- name: Restart openvpn download service.
+  service:
+    name: openvpn-download
+    state: restarted
+  when: openvpn_systemd_register.changed
+
+- name: Restart OpenVPN when the template changes.
+  service:
+    name: openvpn
+    state: restarted
+  when: openvpn_systemd_register.changed
+
+- name: If OpenVPN has restarted, wait 30 seconds to create keys and files.
+  pause:
+    seconds: 30
+  when: openvpn_systemd_register.changed
+
+- name: Make sure OpenVPN service is running.
+  service:
+    name: openvpn
+    state: started

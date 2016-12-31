@@ -1,0 +1,48 @@
+---
+# tasks file for instance.openvpn_create_user_config
+- name: Get public DNS name for OpenVPN remote configuration.
+  set_fact:
+    openvpn_remote: "{{ hostvars['127.0.0.1']['ec2_facts']['instances']
+                 | selectattr('tags.Name', 'equalto', 'openvpn')
+                 | map(attribute='public_dns_name')
+                 | list
+                 | first }}"
+
+- name: Create user keys.
+  shell: |
+    docker exec openvpn \
+    /bin/bash -c 'cd /etc/openvpn && \
+    source ./vars && \
+    ./build-key-automated {{ openvpn_user }}'
+  args:
+    creates: "/data/openvpn/keys/{{ openvpn_user }}.key"
+
+
+- name: Get private key.
+  shell: |
+    docker exec openvpn \
+    cat /etc/openvpn/keys/{{ openvpn_user }}.key
+  register: openvpn_user_key
+
+- name: Get public key.
+  shell: |
+    docker exec openvpn \
+    cat /etc/openvpn/keys/{{ openvpn_user }}.crt
+  register: openvpn_user_crt
+
+- name: Get CA.
+  shell: |
+    docker exec openvpn \
+    cat /etc/openvpn/keys/ca.crt
+  register: openvpn_ca
+
+- name: Template the OVPN config.
+  template:
+    src: openvpn.ovpn.j2
+    dest: "/data/{{ openvpn_user }}.ovpn"
+
+- name: Fetch OVPN config.
+  fetch:
+    src: /data/{{ openvpn_user }}.ovpn
+    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/Desktop/{{ openvpn_user }}.ovpn"
+    flat: yes
