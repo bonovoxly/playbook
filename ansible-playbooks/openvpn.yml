@@ -42,7 +42,7 @@
     - role: ubuntu.raw_install_python
 
 #####
-# Configure shared services on openvpn and MySQL
+# Configure openvpn instance
 #####
 - hosts: openvpn_public
   become: yes
@@ -61,29 +61,3 @@
     - role: instance.docker_install
     - role: instance.openvpn_configure
     - role: instance.openvpn_create_user_config
-
-# #####
-# # Initial raw configuration for ALL instances
-# #####
-# - hosts: internal_system_private
-#   become: yes
-#   remote_user: ubuntu
-#   gather_facts: no
-#
-#   roles:
-#     - role: ubuntu.raw_install_python
-#
-# #####
-# # Configure NAT instance
-# #####
-# - hosts: internal_system_private
-#   become: yes
-#   remote_user: ubuntu
-#   gather_facts: yes
-#
-#   vars_files:
-#     - vars/aws_infrastructure.yml
-#
-#   roles:
-#     - role: instance.ssh_aws_public_key
-#     - role: instance.apache_install
