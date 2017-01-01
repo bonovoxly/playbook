@@ -15,7 +15,7 @@ ec2:
       Name: openvpn
       Environment: "{{ env }}"
       Role: vpn
-    instance_type: t2.nano
+    instance_type: "{{ instance_type | default ('t2.nano') }}"
     keypair: "{{ env }}"
     subnet: public
     wait: yes
