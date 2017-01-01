@@ -4,6 +4,9 @@
 # This playbook deploys an OpenVPN server to AWS.  Use the `vpc_create.yml`
 #   if necessary to create the VPC, subnets, and routes.
 #
+# Example command:
+#  ansible-playbook openvpn.yml -e "env=mod public_ip=true"
+#
 #####
 # Initial AWS deployment
 #####
@@ -17,6 +20,7 @@
     - vars/openvpn.yml
 
   roles:
+    - role: localhost.ssh_key_configure
     - role: aws.vpc_facts
       filters:
         "tag:Environment": "{{ env }}"
