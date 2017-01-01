@@ -7,9 +7,11 @@ Credentials are stored in an Ansible vault, usually in ```vars/vault.yml```.  Va
 
 Ansible playbooks:
 - **[bastionhost](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/bastionhost.yml)** - A playbook that creates a bastion host, allowing SSH access to private instances within a VPC.
+- **[openvpn](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/openvpn.yml)** - A playbook that creates an personal OpenVPN server.  Uses the Docker container created here - https://github.com/bonovoxly/containers/tree/master/openvpn
+- **[vpc_create](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/vpc_create.yml)** - A playbook that creates a VPC, with associated subnets and routes. Note, this may conflict with the `bastionhost` playbook, as that requires interaction with AWS routing.
 
 Ansible-container:
-- **[ansible-container](https://github.com/bonovoxly/playbook/tree/master/ansible-container)** - A quick demo of ansible-container, creating an AWS interactive Docker image and Azure Docker image.
+- **Moved here - https://github.com/bonovoxly/containers**
 
 Old format:
 - **[amibuilder](https://github.com/bonovoxly/playbook/tree/master/old_format/amibuilder)** - A playbook that builds role-based AMI images from a base AMI.
