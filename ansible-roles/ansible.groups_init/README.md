@@ -31,22 +31,7 @@ Dependencies
 Example Playbook
 ----------------
 
-```yaml
-- hosts: localhost
-  connection: local
-  gather_facts: yes
-
-  roles:
-    - role: load_variables
-      variables:
-        - vars/aws_infrastructure.yml
-        - vars/internal_instances.yml
-        - vars/vault.yml
-    - role: aws.ec2_facts
-      filters:
-        "tag:Organization": b_dev
-    - role: ansible.groups_init
-```
+See `bastionhost.yml` or `openvpn.yml` for example uses.
 
 License
 -------
