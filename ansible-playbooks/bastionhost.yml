@@ -13,6 +13,7 @@
     - vars/vault.yml
 
   roles:
+    - role: localhost.ssh_key_configure
     - role: aws.vpc
     - role: aws.vpc_facts
       filters:
