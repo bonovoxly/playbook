@@ -1,7 +1,7 @@
 ---
 # Wordpress and mysql instances.
 # docker settings
-openvpn_docker_image: modops/openvpn-openvpn:20161231030436
+openvpn_docker_image: modops/openvpn-openvpn:20170114181518
 # AWS instance settings. Note that they are list of dictionaries.
 ec2:
   - assign_public_ip: yes
