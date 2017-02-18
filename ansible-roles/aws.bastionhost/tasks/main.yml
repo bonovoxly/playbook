@@ -2,8 +2,6 @@
 # tasks file for aws.bastionhost
 - name: Create bastionhost inbound rules.
   ec2_group:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     description: "{{ securitygroups_bastionhost.tags.Name }} inbound rules"
     name: "{{ securitygroups_bastionhost.name }}"
@@ -13,8 +11,6 @@
 
 - name: Tag bastionhost inbound traffic rules.
   ec2_tag:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     resource: "{{ bastionhost_inbound_results.group_id }}"
     state: present
@@ -22,8 +18,6 @@
 
 - name: Get subnet ID based on subnet variable in ec2_bastionhost dictionary.
   ec2_vpc_subnet_facts:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     filters:
       "tag:Name": "{{ ec2_bastionhost.subnet }}"
@@ -31,8 +25,6 @@
 
 - name: Create bastionhost instance.
   ec2:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     assign_public_ip: "{{ ec2_bastionhost.assign_public_ip }}"
     count_tag:
@@ -50,8 +42,6 @@
 
 - name: Create bastionhost SSH inbound rules for internal instances.
   ec2_group:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     description: "{{ securitygroups_bastionhost_internal.tags.Name }} SSH rules."
     name: "{{ securitygroups_bastionhost_internal.name }}"
@@ -65,13 +55,10 @@
 
 - name: Tag bastionhost SSH inbound rules for internal instancensn.
   ec2_tag:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     resource: "{{ bastionhost_inbound_internal_results.group_id }}"
     state: present
     tags: "{{ securitygroups_bastionhost_internal.tags }}"
-
 
 - name: Set public DNS fact.
   set_fact:

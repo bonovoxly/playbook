@@ -16,10 +16,6 @@ Boto and any software required to run Ansible AWS cloud modules. Uses the AWS CL
 Role Variables
 --------------
 
-- `vault.aws_secret_key`
-  - AWS secret key.
-- `vault.aws_access_key`
-  - AWS access key
 - `ec2_facts`
   - From the role `aws.ec2_facts`.
 

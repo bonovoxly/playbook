@@ -1,0 +1,214 @@
+---
+# tasks file for instance.node
+- name: Install contrack for kube-proxy.
+  apt:
+    name: conntrack
+    state: present
+
+- name: Install modprobe configuration for weave-net CNI.
+  lineinfile:
+    dest: /etc/modules
+    line: br_netfilter
+
+- name: Enable br_netfilter for weave-net CNI.
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Enable bridge-nf for weave-net CNI.
+  sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    sysctl_set: yes
+
+- name: Create Docker directory.
+  file:
+    path: /opt/docker
+    state: directory
+
+- name: Create /var/lib/kubelet directory.
+  file:
+    path: /var/lib/kubelet/ssl
+    state: directory
+
+- name: Copy CFSSL certificates.
+  copy:
+    src: "./ssl/{{ env }}/{{ item }}"
+    dest: "/var/lib/kubelet/ssl/{{ item }}"
+  with_items:
+    - "{{ inventory_hostname }}.pem"
+    - "{{ inventory_hostname }}-key.pem"
+    - node-ca.pem
+    - controller-ca.pem
+
+- name: Create a SSL cert and CA PEM file.
+  shell: cat /var/lib/kubelet/ssl/{{ inventory_hostname }}.pem /var/lib/kubelet/ssl/controller-ca.pem > /var/lib/kubelet/ssl/kubelet-cert-ca.pem
+
+- name: Create CNI directory.
+  file:
+    path: /opt/cni/bin
+    state: directory
+
+- name: Download CNI.
+  get_url:
+    url: "https://github.com/containernetworking/cni/releases/download/{{ kubernetes_cni_version }}/cni-amd64-{{ kubernetes_cni_version }}.tgz"
+    dest: "/opt/cni-amd64-{{ kubernetes_cni_version }}.tgz"
+    mode: 0740
+
+- name: Make the CNI tarfile directory.
+  file:
+    path: "/opt/cni-amd64-{{ kubernetes_cni_version }}/"
+    state: directory
+
+- name: Untar the CNI file
+  unarchive:
+    copy: no
+    src: "/opt/cni-amd64-{{ kubernetes_cni_version }}.tgz"
+    dest: "/opt/cni-amd64-{{ kubernetes_cni_version }}/"
+    creates: "/opt/cni-amd64-{{ kubernetes_cni_version }}/cni"
+
+- name: Copy CNI files.
+  copy:
+    remote_src: true
+    src: "/opt/cni-amd64-{{ kubernetes_cni_version }}/{{ item }}"
+    dest: "/opt/cni/bin/{{ item }}"
+  with_items:
+    - bridge
+    - cnitool
+    - dhcp
+    - flannel
+    - host-local
+    - ipvlan
+    - loopback
+    - macvlan
+    - noop
+    - ptp
+    - tuning
+
+- name: Install Docker.
+  get_url:
+    url: "https://get.docker.com/builds/Linux/x86_64/docker-{{ docker_version }}.tgz"
+    dest: "/opt/docker-{{ docker_version }}.tgz"
+
+- name: Unarchive Docker.
+  unarchive:
+    copy: no
+    src: "/opt/docker-{{ docker_version }}.tgz"
+    dest: /opt/
+    creates: /opt/docker/docker
+
+- name: Copy Docker files.
+  copy:
+    remote_src: true
+    src: "/opt/docker/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    mode: 0755
+  with_items:
+    - docker
+    - docker-proxy
+    - dockerd
+    - docker-containerd
+    - docker-containerd-ctr
+    - docker-containerd-shim
+    - docker-runc
+
+- name: Delete Docker files.
+  file:
+    path: "/opt/docker-{{ docker_version }}.tgz"
+    state: absent
+
+- name: Download Kubernetes.
+  get_url:
+    url: "https://dl.k8s.io/{{ kubernetes_version }}/kubernetes-server-linux-amd64.tar.gz"
+    dest: "/opt/{{ kubernetes_version }}-kubernetes-server-linux-amd64.tar.gz"
+
+- name: Untar the Kubernetes file.
+  unarchive:
+    copy: no
+    src: "/opt/{{ kubernetes_version }}-kubernetes-server-linux-amd64.tar.gz"
+    dest: /opt/
+
+- name: Copy Kubernetes binaries to /usr/sbin.
+  copy:
+    remote_src: true
+    src: "/opt/kubernetes/server/bin/{{ item }}"
+    dest: "/usr/sbin/{{ item }}-{{ kubernetes_version }}"
+    mode: 0700
+  with_items:
+    - kubelet
+    - kube-proxy
+    - kubectl
+
+- name: Symlink the Kubernetes binaries.
+  file:
+    src: "/usr/sbin/{{ item }}-{{ kubernetes_version }}"
+    dest: "/usr/sbin/{{ item }}"
+    state: link
+  with_items:
+    - kubelet
+    - kube-proxy
+    - kubectl
+
+- name: Template systemd files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - docker.service
+    - kubelet.service
+    - kube-proxy.service
+
+- name: systemctl daemon-reload.
+  command: systemctl daemon-reload
+
+- name: Start Docker.
+  service:
+    name: docker
+    enabled: yes
+    state: started
+
+# NOTE THIS SHOULD BE CHANGED.  USE ANSIBLE-VAULT TO STORE THESE CREDENTIALS.
+# the config in defaults/main.yml should not be used.
+- name: Copy token.csv (make sure the values in defaults/main.yml are overridden).
+  copy:
+    content: "{{ token_csv }}"
+    dest: "/var/lib/kubernetes/token.csv"
+
+- name: Get the kubelet credentials.
+  shell: cat /var/lib/kubelet/token.csv | grep kubelet | awk -F"," '{ print $1 }'
+  register: credentials
+
+- name: Template the kubelet config.
+  template:
+    src: kubeconfig.j2
+    dest: /var/lib/kubelet/kubeconfig
+
+- name: Configure kubectl.
+  shell: >
+    /usr/sbin/kubectl config set-cluster {{ env }} \
+      --certificate-authority=/var/lib/kubelet/ssl/node-ca.pem \a
+      --embed-certs=true \
+      --server=https://{{ groups['controller'][0] }}:6443
+
+- name: Get kubectl credentials.
+  shell: cat {{ volume_path }}/controller/token.csv \
+           | grep admin \
+           | awk -F"," '{ print $1 }'
+  register: kubectl_token
+
+- name: Configure kubectl credentials.
+  shell: >
+    /usr/sbin/kubectl config set-credentials admin \
+      --token {{ kubectl_token.stdout }}
+
+- name: Set kubectl context.
+  shell: >
+    kubectl config set-context default-context \
+      --cluster={{ env }} \
+      --user=admin
+
+- name: Use the context.
+  shell: >
+    /usr/sbin/kubectl config use-context default-context \
+      --cluster={{ env }} \
+      --user=admin

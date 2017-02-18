@@ -14,10 +14,6 @@ Boto and any software required to run Ansible AWS cloud modules. Uses the AWS CL
 Role Variables
 --------------
 
-- `vault.aws_secret_key`
-  - AWS secret key.
-- `vault.aws_access_key`
-  - AWS access key
 - `vpc`
   - The `vpc` dictionary.
 - `ec2_facts`
@@ -42,7 +38,6 @@ Example Playbook
       variables:
         - vars/aws_infrastructure.yml
         - vars/internal_instances.yml
-        - vars/vault.yml
     - role: aws.ec2_facts
       filters:
         "tag:Organization": b_dev

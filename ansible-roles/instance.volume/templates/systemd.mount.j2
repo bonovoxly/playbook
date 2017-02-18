@@ -1,0 +1,5 @@
+[Mount]
+What={{ filesystem_dev | default('/dev/xvde') }}
+Where={{ volume_path | default ('/data') }}
+Type={{ filesystem_fstype | default('ext4') }}
+Options={{ filesystem_options | default('defaults,auto,noatime,nodiratime,relatime,nofail') }}

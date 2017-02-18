@@ -2,8 +2,6 @@
 # tasks file for aws.iam
 - name: Create IAM roles.
   iam:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     name: "{{ item.name }}"
     iam_type: "{{ item.iam_type }}"

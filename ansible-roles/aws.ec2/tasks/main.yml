@@ -2,8 +2,6 @@
 # tasks file for aws.ec2
 - name: Get subnet ID based on subnet variable in ec2 dictionary.
   ec2_vpc_subnet_facts:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     filters:
       "tag:Name": "{{ item.subnet }}"
@@ -12,8 +10,6 @@
 
 - name: Create instances.
   ec2:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     assign_public_ip: "{{ item.0.assign_public_ip | default('no') }}"
     exact_count: "{{ item.0.exact_count }}"
@@ -36,8 +32,6 @@
 
 - name: If assign_elastic is defined, associate it with the instance.
   ec2_eip:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     device_id: "{{ item.0.id}}"
     ip: "{{ item.1.assign_elastic }}"

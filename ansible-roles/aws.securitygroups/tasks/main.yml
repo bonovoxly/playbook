@@ -24,8 +24,6 @@
 
 - name: Create security groups.
   ec2_group:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     description: "{{item.description }}"
     name: "{{ item.name }}"
@@ -36,8 +34,6 @@
 
 - name: Tag inbound traffic rules.
   ec2_tag:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     resource: "{{ item.0.group_id }}"
     state: present

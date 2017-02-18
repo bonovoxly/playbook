@@ -13,10 +13,6 @@ Role Variables
 
 Variables required are:
 
-- `vault.aws_secret_key`
-  - AWS secret key.
-- `vault.aws_access_key`
-  - AWS access key
 - `vpc.region`
   - VPC region, defined in the `vpc` dictionary.
 - `vpc.cidr_block`
@@ -55,7 +51,6 @@ Example Playbook
     - role: load_variables
       variables:
         - vars/aws_infrastructure.yml
-        - vars/vault.yml
     # Create and configure VPC
     - role: aws.vpc
 ```

@@ -2,8 +2,6 @@
 # tasks file for aws.routes
 - name: Ensure that the VPC has an Internet Gateway.
   ec2_vpc_igw:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     state: present
     vpc_id: "{{ vpc_id_fact }}"
@@ -11,8 +9,6 @@
 
 - name: Create private route.
   ec2_vpc_route_table:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     state: present
     subnets: "{{ subnet_facts.subnets|selectattr('tags.Route', 'equalto', 'private')|map(attribute='cidr_block')|join(',') }}"
@@ -25,8 +21,6 @@
 
 - name: Create public route.
   ec2_vpc_route_table:
-    aws_secret_key: "{{ vault.aws_secret_key }}"
-    aws_access_key: "{{ vault.aws_access_key }}"
     region: "{{ vpc.region }}"
     state: present
     subnets: "{{ subnet_facts.subnets|selectattr('tags.Route', 'equalto', 'public')|map(attribute='cidr_block')|join(',') }}"

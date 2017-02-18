@@ -11,10 +11,6 @@ Boto and any software required to run Ansible AWS cloud modules.
 Role Variables
 --------------
 
-- `vault.aws_secret_key`
-  - AWS secret key.
-- `vault.aws_access_key`
-  - AWS access key
 - `vpc.region`
   - VPC region, defined in the `vpc` dictionary.
 - `filters`

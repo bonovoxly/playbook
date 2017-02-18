@@ -11,8 +11,6 @@ Boto and any software required to run Ansible AWS cloud modules.
 Role Variables
 --------------
 
-- `vault.aws_secret_key` - AWS secret key.
-- `vault.aws_access_key` - AWS access key.
 - `vpc.region` - VPC region, defined in the `vpc` dictionary.
 - `vpc_id_fact` - The VPC ID.
 - `securitygroups` - A list of security group dictionaries.
@@ -39,7 +37,6 @@ Example Playbook
     variables:
       - vars/aws_infrastructure.yml
       - vars/bastionhost.yml
-      - vars/vault.yml
   - role: aws.vpc_facts
     filters:
       "tag:TagValue": KeyValue
