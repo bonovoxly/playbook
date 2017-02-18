@@ -11,7 +11,18 @@
     regexp: "^.* # {{ marker_vars|default(vpc.resource_tags.Environment) }}"
     state: absent
 
-- name: Add SSH public key to AWS System Log.
+- name: Add SSH public key to AWS System Log (retries 75 times).  Uses environment variables.
+  shell: aws ec2 get-console-output \
+           --region {{ vpc.region }} \
+           --instance-id {{ item.id }} \
+           --output text | grep -v Compatibility | sed -n 's/^.*\(ecdsa-sha2-nistp256 \)\(.*\)/\2/p' | awk '{print $1}'
+  register: host_key_results
+  with_items: "{{ ec2_facts.instances }}"
+  until: host_key_results.stdout != ''
+  retries: 75
+  when: vault.aws_access_key == ''
+
+- name: Add SSH public key to AWS System Log (retries 75 times).
   shell: aws ec2 get-console-output \
            --region {{ vpc.region }} \
            --instance-id {{ item.id }} \
@@ -23,6 +34,7 @@
   environment:
     AWS_ACCESS_KEY_ID: "{{ vault.aws_access_key }}"
     AWS_SECRET_ACCESS_KEY: "{{ vault.aws_secret_key }}"
+  when: vault.aws_access_key != ''
 
 - name: Import SSH public keys - private IP addresses.
   lineinfile:
