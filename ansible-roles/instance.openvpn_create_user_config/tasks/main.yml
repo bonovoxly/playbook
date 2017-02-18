@@ -3,7 +3,7 @@
 - name: Get public DNS name for OpenVPN remote configuration.
   set_fact:
     openvpn_remote: "{{ hostvars['127.0.0.1']['ec2_facts']['instances']
-                 | selectattr('tags.Name', 'equalto', 'openvpn')
+                 | selectattr('tags.Role', 'equalto', 'vpn')
                  | map(attribute='public_dns_name')
                  | list
                  | first }}"
