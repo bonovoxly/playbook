@@ -7,7 +7,11 @@ Credentials are stored in an Ansible vault, usually in `vars/{{ env }}_aws/vault
 
 Ansible playbooks:
 - **[bastionhost](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/bastionhost.yml)** - A playbook that creates a bastion host, allowing SSH access to private instances within a VPC ([blog post here](http://bonovoxly.github.io/2016-07-05-bastion-host-private-vpc-aws)).
-- **[openvpn](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/openvpn.yml)** - A playbook that creates an personal OpenVPN server.  Uses the Docker container created here - https://github.com/bonovoxly/containers/tree/master/openvpn ([blog post here](http://bonovoxly.github.io/2016-12-30-personal-aws-vpn-using-openvpn)).
+- **[openvpn](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/openvpn.yml)** - A playbook that creates an personal OpenVPN server.
+  - [Blog post here](http://bonovoxly.github.io/2016-12-30-personal-aws-vpn-using-openvpn)
+  - [README here](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/docks/openvpn.md)
+  - Docker container created via Ansible-container - https://github.com/bonovoxly/containers/tree/master/openvpn
+  -
 - **[vpc_create](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/vpc_create.yml)** - A playbook that creates a VPC, with associated subnets and routes. Note, this may conflict with the `bastionhost` playbook, as that requires interaction with AWS routing.
 
 Ansible-container:
