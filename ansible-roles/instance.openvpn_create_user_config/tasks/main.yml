@@ -44,5 +44,5 @@
 - name: Fetch OVPN config.
   fetch:
     src: /data/{{ openvpn_user }}.ovpn
-    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/Desktop/{{ openvpn_user }}.ovpn"
+    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/Desktop/{{ env }}-{{ openvpn_user }}.ovpn"
     flat: yes
