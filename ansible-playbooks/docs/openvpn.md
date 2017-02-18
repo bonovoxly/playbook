@@ -4,6 +4,7 @@
 - After creating the account, create an IAM user.  
 - Give this user the Administrator role (or restrict the policy if needed).  
 - Create an AWS access/secret key pair.  Save them somewhere safe.  Export them as environment variables:
+
 ```
 AWS_ACCESS_KEY_ID=YOURACCESSKEY
 AWS_SECRET_ACCESS_KEY=YOURSECRETKEY
