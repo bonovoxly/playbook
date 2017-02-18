@@ -11,7 +11,6 @@ Ansible playbooks:
   - [Blog post here](http://bonovoxly.github.io/2016-12-30-personal-aws-vpn-using-openvpn)
   - [README here](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/docks/openvpn.md)
   - Docker container created via Ansible-container - https://github.com/bonovoxly/containers/tree/master/openvpn
-  -
 - **[vpc_create](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/vpc_create.yml)** - A playbook that creates a VPC, with associated subnets and routes. Note, this may conflict with the `bastionhost` playbook, as that requires interaction with AWS routing.
 
 Ansible-container:
