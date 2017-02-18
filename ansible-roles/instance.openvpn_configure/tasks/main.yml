@@ -29,6 +29,7 @@
   service:
     name: openvpn
     state: restarted
+    enabled: yes
   when: openvpn_systemd_register.changed
 
 - name: If OpenVPN has restarted, wait 30 seconds to create keys and files.
