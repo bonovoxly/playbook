@@ -12,11 +12,29 @@ Previous playbooks used implicit variable loading.  Trying to avoid that with th
 - AWS CLI tools
 - AWS access/secret key configured
 - SSH key configured (with the public key uploaded to AWS)
-- AWS SSH key pair
+- AWS SSH key pair - this should be set in the `ansible.cfg` file.
+- An `ansible.cfg` file (your settings may vary):
 
-# ansible-vault and required secret variables
+```
+# Example ansible.cfg
+[defaults]
+inventory = ./inventory
+roles_path = ../ansible-roles
 
-Many/most of these playbooks require multiple secrets, including AWS access keys, AWS secret keys, SSH private keys, and IP addresses. Often times, these vary by environment.  Note the `openvpn.yml` playbook uses the `mod` environment, and will load the `vars/mod_aws/vault.yml` vault file.  It has the following structure (but can vary):
+[ssh_connection]
+control_path = %(directory)s/ssh-%%C
+```
+
+- Configure your AWS access and secret keys as environment variables:
+
+```
+export AWS_ACCESS_KEY_ID=123yourkey789
+export AWS_SECRET_ACCESS_KEY=1234567tiyrsecret456789
+```
+
+# ansible-vault and required secret variables (optional)
+
+Many/most of these playbooks require multiple secrets, including AWS access keys, AWS secret keys, SSH private keys, and IP addresses. Often times, these vary by environment.  Note the `openvpn.yml` playbook uses the `mod` environment, and will load the `vars/mod_aws/vault.yml` vault file.  Here is an example structure (but can vary):
 
 ```
 vault:
