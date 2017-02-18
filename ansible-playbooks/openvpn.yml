@@ -16,11 +16,9 @@
 
   vars_files:
     - "vars/{{ env }}_aws/aws.yml"
-    - "vars/{{ env }}_aws/vault.yml"
     - vars/openvpn.yml
 
   roles:
-    - role: localhost.ssh_key_configure
     - role: aws.vpc_facts
       filters:
         "tag:Environment": "{{ env }}"
