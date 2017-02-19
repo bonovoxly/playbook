@@ -1,7 +1,0 @@
----
-# defaults file for instance.controller
-token_csv: |
-  DONOTUSETHISDEFAULTTHING1234-5,admin,admin
-  PLEASEdontusethisagain238.3,scheduler,scheduler
-  finallyJUSTdontuse348934this,kubelet,kubelet
-volume_path: /data
