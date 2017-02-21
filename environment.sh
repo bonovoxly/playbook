@@ -7,5 +7,6 @@ if [ ! -f ./env/bin/activate ]; then
   pip install -U boto ansible aws
 fi
 
-echo "ansible-container installed and configured."
+
+echo "Ansible installed and configured."
 echo "run 'source ./env/bin/activate'."
