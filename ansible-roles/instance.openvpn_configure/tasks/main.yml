@@ -41,3 +41,28 @@
   service:
     name: openvpn
     state: started
+
+- name: Get EC2 facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: Remove previous SSH proxy configuration.
+  blockinfile:
+    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/.ssh/config"
+    marker: "# {mark} {{ env }} kubernetes ssh_proxy config"
+    state: absent
+  delegate_to: 127.0.0.1
+  become: false
+  when: ssh_proxy == true
+
+- name: Configure SSH proxy host.
+  blockinfile:
+    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/.ssh/config"
+    marker: "# {mark} {{ env }} kubernetes ssh_proxy config"
+    block: |
+      Host {{ hostvars[groups[env + '-openvpn_public'][0]]['ansible_ec2_local_ipv4'].split('.')[0] }}.{{ hostvars[groups[env + '-openvpn_public'][0]]['ansible_ec2_local_ipv4'].split('.')[1] }}.*.*
+           ProxyCommand ssh -i ~/.ssh/{{ keypair | default('id_rsa') }} -W %h:%p -q {{ hostvars[groups[env + '-openvpn_public'][0]]['ansible_env']['SUDO_USER'] }}@{{ hostvars[groups[env + '-openvpn_public'][0]]['ec2_facts']['ansible_facts']['ansible_ec2_public_hostname'] }}
+           ServerAliveInterval 30
+  delegate_to: 127.0.0.1
+  become: false
+  when: ssh_proxy == true
