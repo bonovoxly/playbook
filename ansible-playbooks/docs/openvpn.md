@@ -1,4 +1,4 @@
-# openvpn.yml
+# OpenVPN quickstart
 
 - Sign up and register for an AWS account.
 - After creating the account, create an IAM user.  
@@ -6,8 +6,8 @@
 - Create an AWS access/secret key pair.  Save them somewhere safe.  Export them as environment variables:
 
 ```
-AWS_ACCESS_KEY_ID=YOURACCESSKEY
-AWS_SECRET_ACCESS_KEY=YOURSECRETKEY
+export AWS_ACCESS_KEY_ID=YOURACCESSKEY
+export AWS_SECRET_ACCESS_KEY=YOURSECRETKEY
 ```
 - Optional - create the SSH key pair (optional - modify your ansible.cfg as needed, if you save it to a non-default path).
 
@@ -26,7 +26,7 @@ sudo pip install virtualenv
 ./environment.sh
 # activate the virtualenv
 sourece ./env/bin/activate
-# change to the ansible-playbooks directory 
+# change to the ansible-playbooks directory
 cd ansible-playbooks
 ```
 
