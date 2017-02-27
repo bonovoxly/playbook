@@ -1,0 +1,45 @@
+---
+# tasks file for instance.etcd
+- name: Get ec2_facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: Set domain suffix.
+  set_fact:
+    domain_suffix: "{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}"
+
+- name: Set AWS hostname
+  set_fact:
+    aws_hostname: "{{ ec2_facts.ansible_facts.ansible_ec2_hostname }}"
+
+- name: Create the {{ volume_path }} directory.
+  file:
+    path: "{{ volume_path }}/etcd/{{ item }}"
+    state: directory
+  with_items:
+    - ssl
+
+- name: Copy in CFSSL certificates.
+  copy:
+    src: "./ssl/{{ env }}/{{ item }}"
+    dest: "{{ volume_path }}/etcd/ssl/{{ item }}"
+  with_items:
+    - etcd-ca.pem
+    - "{{ inventory_hostname }}.pem"
+    - "{{ inventory_hostname }}-key.pem"
+    - etcdclient-ca.pem
+    - etcdclient-key.pem
+    - etcdclient.pem
+  notify:
+    - restart_etcd
+
+- name: Template etcd systemd.
+  template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  notify:
+    - restart_etcd
+
+- name: systemctl daemon-reload.
+  command: systemctl daemon-reload
+  changed_when: false

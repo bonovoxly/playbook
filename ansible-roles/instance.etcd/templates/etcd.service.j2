@@ -1,0 +1,43 @@
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos
+After=docker.service
+RequiresMountsFor={{ volume_path }}
+
+[Service]
+ExecStartPre=-/usr/bin/docker rm etcd
+ExecStart=/usr/bin/docker run \
+  -p 2379:2379 \
+  -p 2380:2380 \
+  --name etcd \
+  --net host \
+  -v {{ volume_path }}/etcd/ssl:/opt/ssl \
+  -v {{ volume_path }}/etcd/{{ ec2_facts.ansible_facts.ansible_ec2_hostname }}.etcd:/{{ ec2_facts.ansible_facts.ansible_ec2_hostname }}.etcd \
+  {{ etcd_docker_image }} \
+  /usr/local/bin/etcd \
+  -debug \
+  -name {{ ec2_facts.ansible_facts.ansible_ec2_hostname }} \
+  -heartbeat-interval 200 \
+  -election-timeout 1000 \
+  -advertise-client-urls https://{{ ansible_eth0.ipv4.address }}:2379 \
+  -listen-client-urls https://0.0.0.0:2379 \
+  -initial-advertise-peer-urls https://{{ ansible_eth0.ipv4.address }}:2380 \
+  -listen-peer-urls https://0.0.0.0:2380 \
+  -initial-cluster-token {{ env }}-etcd \
+  -initial-cluster {% for each in groups['etcd'] %}ip-{{ each.split(".")[0] }}-{{ each.split('.')[1] }}-{{ each.split('.')[2] }}-{{ each.split('.')[3] }}{% if ec2_facts.ansible_facts.ansible_ec2_placement_region == 'us-east-1' %}.ec2.internal{% else %}.{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}.compute.internal{% endif %}=https://{{ each }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
+  -initial-cluster-state new \
+  -client-cert-auth \
+  -trusted-ca-file=/opt/ssl/etcdclient-ca.pem \
+  -cert-file=/opt/ssl/etcdclient.pem \
+  -key-file=/opt/ssl/etcdclient-key.pem \
+  -peer-client-cert-auth \
+  -peer-trusted-ca-file=/opt/ssl/etcd-ca.pem \
+  -peer-cert-file=/opt/ssl/{{ inventory_hostname }}.pem \
+  -peer-key-file=/opt/ssl/{{ inventory_hostname }}-key.pem
+ExecStop=-/usr/bin/docker stop etcd
+
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

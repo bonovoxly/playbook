@@ -1,0 +1,27 @@
+Description=Kubernetes Kubelet
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/sbin/kubelet \
+  --allow-privileged=true \
+  --cloud-provider=aws \
+  --cluster-dns={{ service_cluster_dns }} \
+  --cluster-domain={{ cluster_domain }} \
+  --container-runtime=docker \
+  --docker=unix:///var/run/docker.sock \
+  --enable-controller-attach-detach=true \
+  --network-plugin=cni \
+  --kubeconfig=/var/lib/kubelet/kubeconfig \
+  --require-kubeconfig \
+  --serialize-image-pulls=false \
+  --tls-cert-file=/var/lib/kubelet/ssl/kubelet-cert-ca.pem \
+  --tls-private-key-file=var/lib/kubelet/ssl/{{ inventory_hostname }}-key.pem \
+  --v=2
+
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

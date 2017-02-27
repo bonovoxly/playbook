@@ -1,0 +1,38 @@
+---
+# tasks file for kubernetes.initialization
+- name: Create the kubctl directory.
+  file:
+    path: /var/lib/kubelet/kubectl
+    state: directory
+
+- name: Check for Weave daemonset.
+  shell: kubectl --namespace kube-system get daemonset | grep weave | awk '{ print $1 }'
+  register: weave_daemonset
+
+- name: Deploy the Weave CNI.
+  shell: kubectl apply -f https://git.io/weave-kube
+  when: weave_daemonset.stdout.find('weave') == -1
+
+- name: Template the kube-dns files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/var/lib/kubelet/kubectl/{{ item }}"
+  with_items:
+    - kube-dns-controller.yml
+    - kube-dns-service.yml
+
+- name: Check for the kube-dns deployment.
+  shell: kubectl --namespace kube-system get deployment | grep kube-dns | awk '{ print $1 }'
+  register: kube_dns_deployment
+
+- name: Deploy the kube-dns deployment.
+  shell: kubectl create -f /var/lib/kubelet/kubectl/kube-dns-controller.yml
+  when: kube_dns_deployment.stdout.find('kube-dns') == -1
+
+- name: Check for the kube-dns service.
+  shell: kubectl --namespace kube-system get service | grep kube-dns | awk '{ print $1 }'
+  register: kube_dns_service
+
+- name: Deploy the kube-dns service.
+  shell: kubectl create -f /var/lib/kubelet/kubectl/kube-dns-service.yml
+  when: kube_dns_service.stdout.find('kube-dns') == -1
