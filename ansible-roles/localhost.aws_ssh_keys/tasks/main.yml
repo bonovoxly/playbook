@@ -11,16 +11,13 @@
     regexp: "^.* # {{ marker_vars|default(env) }}"
     state: absent
 
-- name: Add SSH public key to AWS System Log.
+- name: Add SSH public key to AWS System Log - this is BEST EFFORT.  May miss the SSH public key.
   shell: aws ec2 get-console-output \
            --region {{ vpc.region }} \
            --instance-id {{ item.id }} \
            --output text | sed -n 's/^.*\(ecdsa-sha2-nistp256 \)\(.*\)/\2/p' | tail -n 1 | awk '{print $1}' | awk '{print substr($0,1,140)}'
   register: host_key_results
   with_items: "{{ ec2_facts.instances }}"
-  ignore_errors: true
-  until: host_key_results.stdout != ''
-  retries: 60
 
 - name: Import SSH public keys - private IP addresses.
   lineinfile:
