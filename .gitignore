@@ -70,3 +70,7 @@ env/*
 # ansible-container build directory #
 #####################################
 ansible-playbooks/env/*
+
+# fetched SSL directory #
+#########################
+ssl/*
