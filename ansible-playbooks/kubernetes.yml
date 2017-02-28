@@ -46,7 +46,6 @@
 
 # Intial configuration Kubernetes instances
 # Initial raw configuration
-# - hosts: cfssl:etcd:controller:node
 - hosts: cfssl:etcd:controller:node
   become: yes
   gather_facts: no
@@ -107,7 +106,7 @@
     - role: instance.hosts
     - role: instance.node
 
-# Deploy pods and services, including Weave-net, Kube-DNS, and the Docker voting app
+# Deploy pods and services, including Weave-net, Kube-DNS
 - hosts: node[0]
   become: yes
   gather_facts: yes
