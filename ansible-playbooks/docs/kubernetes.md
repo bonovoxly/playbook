@@ -52,3 +52,21 @@ ansible-playbook -i inventory/kubes kubernetes.yml -e "env=dev keypair=dev"
 - Again, if you get prompted for an SSH fingerprint, either the log hasn't updated yet or AWS did not handle it properly.  If the log never shows up, you can terminate or just blindly accept.
 
 - Once the playbook completes, you should have an OpenVPN access point, a CFSSL x509 certificate generation service, and an internal Kubernetes cluster DNS, complete with a Weave CNI daemonset, and kube-dns.  There should be an OpenVPN profile on the desktop, as well as a kubeconfig.
+
+# bugs, issues, and future improvements
+
+- The Ansible playbook scans the AWS system console for the SSH public key for every instance found with the `Environment={{ env }}` tag.  It is a secure way of acquiring the SSH fingerprint without just blindly accepting it upon the initial SSH connection. However, sometimes, especially when deploying multiple instances at the same time via Terraform, the system log is blank when the instance is initially deployed. This will cause the SSH public key to not be imported into `known_hosts`.  Currently, the way to correct that is to terminate the instance and redeploy it, as it only seems to happen on the initial provision and usually when provisioning a bunch of instances at the same time.
+- Terraform destroy will get stuck with the EBS volume attachments (appears to be a bug) - https://github.com/hashicorp/terraform/issues/4643. Have to stop/term the instance first.
+- Issues with terraform destroy and the EBS volumes.  Instances must be shutdown/terminated before terraform destroy will work.
+- Create a DNS entry that contains all controller plane instances, with a health check or a Route53 entry containing all three controllers.  Currently controller[0] is the only instance that is used.
+- Add the Kubernetes dashboard.
+- Add Route53 support for the Terraform/Ansible deployment of Kubernetes, to include support for custom FQDNs (like `*.kubes.local`).
+- Add documentation on upgrading and adding additional nodes.
+- Add autoscaling nodes.
+- Add the route53 service to automatically configure Route53 DNS settings - https://github.com/wearemolecule/route53-kubernetes
+- Rewrite the Ansible playbook to use Terraform's dynamic inventory script - https://github.com/CiscoCloud/terraform.py
+- As soon as they support it, add in the fsType for StorageClass and dynamic persistent volume claims - https://github.com/kubernetes/kubernetes/pull/40805
+- Consider a different method for SSL key distribution. It currently fetches the SSL key pairs and then uploads them to the hosts, leaving potential SSL key data on the Ansible host.
+- Add the network traffic inside of the components, such as the traffic within the etcd cluster.
+- Add network diagram that describes the Weave overlay network and how the pods communicate through that.
+- Consider a "pull model" configuration.  In this setup, all instances would pull either from some AWS CodeCommit or S3 repository and run the proper configuration. This could simplify the process, where only Terraform is needed to create the instances with a user script that could kick off the instance configuration.  The push model is a personal preference, and both methods are reasonable.
