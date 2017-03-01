@@ -73,4 +73,4 @@ ansible-playbooks/env/*
 
 # fetched SSL directory #
 #########################
-ssl/*
+ansible-playbooks/ssl/*
