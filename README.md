@@ -12,7 +12,7 @@ Ansible playbooks:
   - [README here](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/docs/openvpn.md)
   - [Docker container created via Ansible-container](https://github.com/bonovoxly/containers/tree/master/openvpn)
 - **[vpc_create](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/vpc_create.yml)** - A playbook that creates a VPC, with associated subnets and routes. Note, this may conflict with the `bastionhost` playbook, as that requires interaction with AWS routing.
-- **[another kubernetes playbook](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/kubernetes.yml)** - A playbook that configures a Kubernetes stack deployed via Terraform ([blog post here](http://bonovoxly.github.io/2017-02-27-another-terraform-ansible-kubernetes)).
+- **[another kubernetes playbook](https://github.com/bonovoxly/playbook/blob/master/ansible-playbooks/kubernetes.yml)** - A playbook that configures a Kubernetes stack deployed via Terraform ([blog post here](http://bonovoxly.github.io/2017-02-28-another-terraform-ansible-kubernetes)).
 
 Ansible-container:
 - **Moved here - https://github.com/bonovoxly/containers**
