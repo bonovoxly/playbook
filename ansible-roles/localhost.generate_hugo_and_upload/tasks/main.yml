@@ -1,0 +1,11 @@
+---
+# tasks file for localhost.generate_hugo_and_upload
+- name: Generate hugo static files.
+  shell: ../hugo_0.19_linux_amd64 -b "http://{{ s3_bucket_name }}.s3-website-us-east-1.amazonaws.com" --theme=hugo-theme-learn
+  args:
+    chdir: ./stuffs-demo-bucket/hugo_0.19_linux_amd64/stuffs
+
+- name: Upload to S3.
+  shell: aws --delete s3 sync public s3://{{ s3_bucket_name }}/
+  args:
+    chdir: "./{{ s3_bucket_name }}/hugo_0.19_linux_amd64/stuffs"

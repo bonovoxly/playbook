@@ -1,0 +1,54 @@
+---
+# tasks file for instance.get_inventory
+- name: Gather EC2 facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: debug.
+  debug:
+    msg: "{{ ec2_facts }}"
+
+- name: debug localhost facts.
+  debug:
+    msg: "{{ hostvars['127.0.0.1']['ec2_facts'] }}"
+
+- name: Set AWS EC2 name fact.
+  set_fact:
+    aws_ec2_name: "{{ hostvars['127.0.0.1']['ec2_facts']['instances']  | selectattr('private_ip_address', 'equalto', inventory_hostname)|map(attribute='tags.Name')|list|first }}"
+
+- name: Kill automatic update script if it is running.
+  shell: pkill --full /usr/bin/unattended-upgrade
+  register: pkill
+  failed_when: pkill.rc > 0
+  changed_when: pkill.rc == 0
+
+- name: Update the apt cache.
+  apt:
+    update_cache: yes
+
+- name: Get list of all installed packages and available updates.
+  shell: apt list --installed | awk '{ print "| " $1 " | " $2 " | " $NF " |" }'  | grep -v Listing | sed 's/\[//g' | sed 's/\]//g' | sed 's/,now//g'
+  register: apt_list_installed
+
+- name: Get date for markdown.
+  shell: date -u +"%Y-%m-%dT%H:%M:%SZ"
+  register: date_markdown
+
+- name: Template the markdown inventory file.
+  template:
+    src: inventory.md.j2
+    dest: /root/inventory.md
+
+- name: Make a local directory for the Hugo markdown files.
+  file:
+    path: "./{{ s3_bucket_name }}/inventory"
+    state: directory
+  delegate_to: 127.0.0.1
+  become: false
+  run_once: true
+
+- name: Fetch the inventory file.
+  fetch:
+    src: /root/inventory.md
+    dest: "./{{ s3_bucket_name }}/inventory/{{ aws_ec2_name }}.md"
+    flat: true
