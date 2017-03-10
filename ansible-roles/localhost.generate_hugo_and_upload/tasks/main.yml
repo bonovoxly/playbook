@@ -1,11 +1,130 @@
 ---
 # tasks file for localhost.generate_hugo_and_upload
-- name: Generate hugo static files.
-  shell: ../hugo_0.19_linux_amd64 -b "http://{{ s3_bucket_name }}.s3-website-us-east-1.amazonaws.com" --theme=hugo-theme-learn
+- name: Debug
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - "{{ ansible_distribution }}"
+    - "{{ ansible_distribution_release }}"
+    - "{{ ansible_distribution_version }}"
+    - "{{ ansible_system }}"
+    - "{{ ansible_architecture }}"
+
+- name: If architecture is not 64-bit, fail.
+  fail:
+    msg: "Architecture is not 64-bit (architecture is {{ ansible_architecture }}).  Exiting."
+  when: ansible_architecture != 'x86_64'
+
+- name: Create temporary Hugo directory.
+  file:
+    path: ./temp_hugo
+    state: directory
+
+- name: Download Hugo blog generation software if Linux.
+  get_url:
+    url: "https://github.com/spf13/hugo/releases/download/v{{ hugo_version }}/hugo_{{ hugo_version }}_Linux-64bit.tar.gz"
+    dest: ./temp_hugo/hugo.tar.gz
+  when: ansible_system == 'Linux'
+
+- name: Download Hugo blog generation software if OS X.
+  get_url:
+    url: "https://github.com/spf13/hugo/releases/download/v{{ hugo_version }}/hugo_{{ hugo_version }}_macOS-64bit.zip"
+    dest: ./temp_hugo/hugo.zip
+  when: ansible_system == 'MacOSX'
+
+# unarchive bug....
+- name: Extract Hugo if Linux.
+  shell: tar -x -C ./temp_hugo/ -z -f ./temp_hugo/hugo.tar.gz
   args:
-    chdir: ./stuffs-demo-bucket/hugo_0.19_linux_amd64/stuffs
+    creates: ./temp_hugo/hugo_{{ hugo_version }}_linux_amd64
+  when: ansible_system == 'Linux'
+
+- name: Extract Hugo if OS X.
+  shell: unzip temp_hugo/hugo.zip -d temp_hugo
+  args:
+    creates: "./temp_hugo/hugo_{{ hugo_version }}_darwin_amd64"
+  when: ansible_system == 'MacOSX'
+
+- name: Create Hugo symlink if Linux.
+  file:
+    src: "{{ playbook_dir }}/temp_hugo/hugo_{{ hugo_version }}_linux_amd64"
+    dest: "{{ playbook_dir }}/temp_hugo/hugo"
+    state: link
+  when: ansible_system == 'Linux'
+
+- name: Create Hugo symlink if OS X.
+  file:
+    src: "./temp_hugo/hugo_{{ hugo_version }}_darwin_amd64"
+    dest: ./hugo
+    state: link
+  when: ansible_system == 'MacOSX'
+
+- name: Rename the Hugo binary if Linux.
+  shell: >
+    mv ./temp_hugo/hugo_{{ hugo_version }}_linux_amd64/hugo_{{ hugo_version }}_linux_amd64 \
+    ./temp_hugo/hugo_{{ hugo_version }}_linux_amd64/hugo
+  args:
+    creates: "./temp_hugo/hugo/hugo"
+  when: ansible_system == 'Linux'
+
+- name: Rename the Hugo binary if OS X.
+  shell: >
+    mv ./temp_hugo/hugo_{{ hugo_version }}_darwin_amd64/hugo_{{ hugo_version }}_darwin_amd64 \
+    ./temp_hugo/hugo_{{ hugo_version }}_darwin_amd64/hugo
+  args:
+    creates: "./temp_hugo/hugo/hugo"
+  when: ansible_system == 'MacOSX'
+
+- name: Generate Hugo site.
+  shell: ./hugo new site {{ site_name }}
+  args:
+    chdir: "./temp_hugo/hugo"
+    creates: "{{ site_name }}"
+
+- name: Install Hugo Learn Theme.
+  shell: git clone https://github.com/matcornic/hugo-theme-learn.git
+  args:
+    chdir: "./temp_hugo/hugo/{{ site_name }}/themes/"
+    creates: "hugo-theme-learn"
+
+- name: Template the config.toml file.
+  template:
+    src: config.toml.j2
+    dest: "./temp_hugo/hugo/{{ site_name }}/config.toml"
+
+- name: Make the inventory directory.
+  file:
+    path: "./temp_hugo/hugo/{{ site_name }}/content/inventory"
+    state: directory
+
+- name: Make the static json directory.
+  file:
+    path: "./temp_hugo/hugo/{{ site_name }}/static/json"
+    state: directory
+
+- name: Create inventory index.
+  template:
+    src: index.md.j2
+    dest: "./temp_hugo/hugo/{{ site_name }}/content/inventory/index.md"
+
+- name: Copy in the files.
+  copy:
+    src:  "./temp_hugo/inventory/{{ item.tags.Name }}.md"
+    dest: "./temp_hugo/hugo/{{ site_name }}/content/inventory/{{ item.tags.Name }}.md"
+    remote_src: true
+  with_items: "{{ ec2_facts.instances }}"
+
+- name: Generate search.
+  shell:  lunr-hugo -i "./temp_hugo/hugo/{{ site_name }}/content/**/*.md" -o ./temp_hugo/hugo/{{ site_name }}/static/json/search.json -l toml
+
+- name: Generate hugo static files.
+  shell: ../hugo
+  args:
+    chdir: "./temp_hugo/hugo/{{ site_name }}"
 
 - name: Upload to S3.
-  shell: aws --delete s3 sync public s3://{{ s3_bucket_name }}/
-  args:
-    chdir: "./{{ s3_bucket_name }}/hugo_0.19_linux_amd64/stuffs"
+  shell: aws --delete s3 sync ./temp_hugo/hugo/{{ site_name }}/public s3://{{ s3_bucket_name }}/
+
+- name: Debug S3 bucket location.
+  debug:
+    msg: "http://{{ s3_bucket_name }}.s3-website-{{ region | default('us-east-1')}}.amazonaws.com"
