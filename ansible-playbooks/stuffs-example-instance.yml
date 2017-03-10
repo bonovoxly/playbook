@@ -16,7 +16,7 @@
     - role: ansible.groups_init
 
 # Python configuration
-- hosts: "{{ instances }}"
+- hosts: example_private
   become: yes
   gather_facts: no
   user: ubuntu
