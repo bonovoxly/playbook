@@ -41,7 +41,7 @@
 
 - name: Make a local directory for the Hugo markdown files.
   file:
-    path: "./{{ s3_bucket_name }}/inventory"
+    path: "./temp_hugo/inventory"
     state: directory
   delegate_to: 127.0.0.1
   become: false
@@ -50,5 +50,15 @@
 - name: Fetch the inventory file.
   fetch:
     src: /root/inventory.md
-    dest: "./{{ s3_bucket_name }}/inventory/{{ aws_ec2_name }}.md"
+    dest: "./temp_hugo/inventory/{{ aws_ec2_name }}.md"
     flat: true
+
+- name: Debug
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - "{{ ansible_distribution }}"
+    - "{{ ansible_distribution_release }}"
+    - "{{ ansible_distribution_version }}"
+    - "{{ ansible_system }}"
+    - "{{ ansible_architecture }}"
