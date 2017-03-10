@@ -6,7 +6,6 @@
   connection: local
   gather_facts: yes
   roles:
-    # - role: localhost.ssh_key_configure
     - role: aws.ec2_facts
       filters:
         "tag:Environment": "{{ env }}"
@@ -29,7 +28,7 @@
   gather_facts: yes
   remote_user: ubuntu
   vars_files:
-    - vars/openvpn.yml
+    - vars/openvpn_terraform.yml
   roles:
     - role: instance.ssh_aws_public_key
     - role: instance.hosts
