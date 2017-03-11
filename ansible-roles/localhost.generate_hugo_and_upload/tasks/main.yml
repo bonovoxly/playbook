@@ -115,7 +115,14 @@
   with_items: "{{ ec2_facts.instances }}"
 
 - name: Generate search.
-  shell:  lunr-hugo -i "./temp_hugo/hugo/{{ site_name }}/content/**/*.md" -o ./temp_hugo/hugo/{{ site_name }}/static/json/search.json -l toml
+  shell:  lunr-hugo -i "./**/*.md" -o ../static/json/search.json -l toml
+  args:
+    chdir: "./temp_hugo/hugo/{{ site_name }}/content"
+
+- name: Template landing page.
+  template:
+    src: index.html.j2
+    dest: "./temp_hugo/hugo/{{ site_name }}/layouts/index.html"
 
 - name: Generate hugo static files.
   shell: ../hugo
