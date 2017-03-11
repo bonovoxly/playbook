@@ -16,9 +16,10 @@
     - role: ansible.groups_init
 
 # Python configuration
-- hosts: example_private
+- hosts: web1_private:db1_private
   become: yes
   gather_facts: no
   user: ubuntu
   roles:
     - role: ubuntu.raw_install_python
+    - role: instance.ssh_aws_public_key # dumps the SSH public key to AWS System Log
