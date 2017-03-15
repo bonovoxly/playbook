@@ -1,3 +1,14 @@
+# OpenVPN requirements
+
+The following software was used to deploy OpenVPN:
+
+- An AWS account with a configured administrator user, with access and secret keys configured.
+- SSH public key uploaded to AWS, in this case named `dev` (a Terraform and Ansible variable).
+- (OPTIONAL if using `openvpn_terraform.yml`) Terraform v0.8.7 (https://www.terraform.io/downloads.html)
+- Ansible 2.2.1.0 (installed via pip)
+- AWS CLI tools and Boto - `aws-cli/1.11.2 Python/2.7.12 Linux/4.9.8-moby botocore/1.4.60` (installed via pip)
+- An OpenVPN client, such as Tunnelblick.
+
 # OpenVPN quickstart
 
 - Sign up and register for an AWS account.

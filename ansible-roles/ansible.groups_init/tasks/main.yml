@@ -3,7 +3,7 @@
 - name: Add all instances to the private instances group.
   add_host:
     groups: instances_private
-    hostname: "{{ item.private_dns_name }}"
+    hostname: "{{ item.private_ip_address }}"
   with_items:
     - "{{ ec2_facts.instances|selectattr('state', 'equalto', 'running')|list }}"
 
@@ -17,7 +17,7 @@
 - name: Add instances to their private 'Role' group.
   add_host:
     groups: "{{ item.tags.Role }}_private"
-    hostname: "{{ item.private_dns_name }}"
+    hostname: "{{ item.private_ip_address }}"
   with_items:
     - "{{ ec2_facts.instances|selectattr('state', 'equalto', 'running')|list }}"
   when: item.tags.Role is defined
@@ -25,7 +25,7 @@
 - name: Add instances to their private 'Name' group.
   add_host:
     groups: "{{ item.tags.Name }}_private"
-    hostname: "{{ item.private_dns_name }}"
+    hostname: "{{ item.private_ip_address }}"
   with_items:
     - "{{ ec2_facts.instances|selectattr('state', 'equalto', 'running')|list }}"
   when: item.tags.Name is defined
