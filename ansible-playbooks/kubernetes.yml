@@ -2,7 +2,7 @@
 # kubernetes.yml
 #
 # This playbook deploys an OpenVPN server, a cfssl certificate instance, and a full Kubernetes cluster, integrated with AWS.
-# It is based on the `kubernetes-aws` terraform.
+# It is based on the `kubes` terraform.
 #
 
 # Initial AWS configuration, variables, and scrapes AWS public keys.
