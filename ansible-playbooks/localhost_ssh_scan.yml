@@ -7,7 +7,7 @@
 #   ansible-playbook localhost_ssh_config.yml -e region=us-east-1
 #
 # To clean out all trace per region:
-#   ansible-playbook localhost_ssh_config.yml -e region=us-east-1 and -e clean=yes
+#   ansible-playbook localhost_ssh_config.yml -e region=us-east-1 and -e wipe=yes
 #
 # There is also a custom marker variable - `mark`.  One example use is if you have regions with similar hostnames.
 #
@@ -16,12 +16,12 @@
   connection: local
   gather_facts: yes
   tasks:
-    - name: Gather EC2 facts.
+    - name: Gather EC2 remote facts.
       ec2_remote_facts:
         region: "{{ region }}"
         filters:
           instance-state-name: running
-      register: ec2_facts
+      register: ec2_remote_facts
 
     - name: Touch ~/.ssh/config and ~/.ssh/known_hosts (creates them if they don't exist).
       file:
@@ -36,8 +36,8 @@
         dest: "{{ ansible_env.HOME }}/.ssh/config"
         marker: "# {mark} {{ region }} - {{ item.tags.Name.replace(' ','_') }} - ansible generated {% if mark is defined %}{{ mark }}{% endif %}"
         state: absent
-      with_items: "{{ ec2_facts.instances }}"
-      when: item.tags.Name is defined and clean is not defined
+      with_items: "{{ ec2_remote_facts.instances }}"
+      when: item.tags.Name is defined and wipe is not defined
 
     - name: Configure SSH proxy host.
       blockinfile:
@@ -47,20 +47,16 @@
           Host {{ item.tags.Name.replace(' ','_') }}
             HostName {{ item.private_ip_address }}
             ServerAliveInterval 30
-      with_items: "{{ ec2_facts.instances }}"
-      when: item.tags.Name is defined and item.private_ip_address and clean is not defined
-
-    - name: Clean SSH config.
-      command: sed -ie '/# BEGIN {{ region }}.* ansible generated/,+4d' {{ ansible_env.HOME }}/.ssh/config
-      when: clean is defined and region is defined
+      with_items: "{{ ec2_remote_facts.instances }}"
+      when: item.tags.Name is defined and item.private_ip_address and wipe is not defined
 
     - name: Clean all environment created SSH fingerprints.
       lineinfile:
         dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
         regexp: "^.*#\\s{{ region }} - {{ item.tags.Name.replace(' ','_') }} - ansible generated {% if mark is defined %}{{ mark }}{% endif %}$"
         state: absent
-      with_items: "{{ ec2_facts.instances }}"
-      when: item.tags.Name is defined and clean is not defined
+      with_items: "{{ ec2_remote_facts.instances }}"
+      when: item.tags.Name is defined and wipe is not defined
 
     # This is using boto credentials.
     - name: Get SSH key from system log.
@@ -69,19 +65,25 @@
                --instance-id {{ item.id }} \
                --output text | grep -v Compatibility | sed -n 's/^.*\(ecdsa-sha2-nistp256 \)\(.*\)/\2/p' | awk '{print $1}' | sed 's/^M//'
       register: host_key_info
-      with_items: "{{ ec2_facts.instances }}"
-      when: item.tags.Name is defined and clean is not defined
+      with_items: "{{ ec2_remote_facts.instances }}"
+      when: item.tags.Name is defined and wipe is not defined
 
     - name: Import SSH fingerpints - private IP addresses for items found in the AWS system console.
       lineinfile:
         dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
         line: "{{ item.0.tags.Name}},{{ item.0.private_dns_name }},{{ item.0.private_ip_address }}{% if item.0.public_ip_address is defined %},{{ item.0.public_ip_address }}{% endif %} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ region }} - {{ item.0.tags.Name.replace(' ','_') }} - ansible generated {% if mark is defined %}{{ mark }}{% endif %}"
       with_together:
-        - "{{ ec2_facts.instances }}"
+        - "{{ ec2_remote_facts.instances }}"
         - "{{ host_key_info.results }}"
-      when: clean is not defined and item.1.stdout is defined and item.1.stdout != ''
+      when: wipe is not defined and item.1.stdout is defined and item.1.stdout != ''
 
-    - name: Clean SSH known_hosts.
+# WIPE SECTION
+    - name: WIPE the ~/.ssh/config entries with the marker.
+      command: sed -ie '/# BEGIN {{ region }}.* ansible generated/,+4d' {{ ansible_env.HOME }}/.ssh/config
+      when: wipe is defined and region is defined
+
+    - name: WIPE the ~/.ssh/known_hosts entries with the marker.
       command: sed -ie '/^.*# {{ region }} - {{ item.0.tags.Name.replace(' ','_') }} - ansible generated {% if mark is defined %}{{ mark }}{% endif %}/d' {{ ansible_env.HOME }}/.ssh/known_hosts
-      with_items: "{{ ec2_facts.instances }}"
-      when: clean is defined and region is defined
+      with_items: "{{ ec2_remote_facts.instances }}"
+      when: wipe is defined and region is defined
+
