@@ -1,5 +1,0 @@
-# vars/stuffs.yml
-
-hugo_version: '0.19'
-site_name: stuffs
-s3_bucket_name: stuffs-demo-bucket

@@ -1,3 +1,0 @@
----
-# defaults file for instance.etcd
-volume_path: /data

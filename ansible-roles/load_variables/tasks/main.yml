@@ -1,5 +1,0 @@
----
-# tasks file for load_variables
-- name: Load variables.
-  include_vars: "{{ item }}"
-  with_items: "{{ variables }}"

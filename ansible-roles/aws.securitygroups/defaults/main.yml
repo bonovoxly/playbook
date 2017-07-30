@@ -1,5 +1,0 @@
----
-# defaults file for aws.securitygroups
-bastionhost_ssh_rules: []
-current_public_ip_rules: []
-public_ip: false

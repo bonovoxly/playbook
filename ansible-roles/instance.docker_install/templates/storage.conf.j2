@@ -1,6 +1,0 @@
-[Service]
-ExecStart=
-ExecStart=/usr/bin/docker daemon \
-          -H fd:// \
-          --graph="{{ docker_graph | default('/var/lib/docker') }}" \
-          --storage-driver={{ docker_storage_driver | default('overlay') }}

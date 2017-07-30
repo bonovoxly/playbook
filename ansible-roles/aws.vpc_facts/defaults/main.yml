@@ -1,5 +1,0 @@
----
-# defaults file for aws.vpc_facts
-vault:
-  aws_access_key: ''
-  aws_secret_key: ''
