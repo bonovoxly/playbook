@@ -11,8 +11,7 @@ None.
 Role Variables
 --------------
 
-- `vault.ansible_ssh_key_file` - the path to the SSH private key file.  
-- `vault.ansible_ssh_key_contents` - the contents of the SSH private key file.
+None.
 
 Dependencies
 ------------
@@ -32,4 +31,4 @@ BSD
 Author Information
 ------------------
 
-Bill Cawthra - http://bonovoxly.github.io/
+Bill Cawthra - https://blog.billyc.io/

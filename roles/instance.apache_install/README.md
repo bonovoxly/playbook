@@ -39,4 +39,4 @@ BSD
 Author Information
 ------------------
 
-Bill Cawthra - http://bonovoxly.github.io/
+Bill Cawthra - https://blog.billyc.io/
