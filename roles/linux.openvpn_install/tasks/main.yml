@@ -1,0 +1,51 @@
+---
+# tasks file for linux.openvpn_install
+- name: Install iptables and openvpn.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - iptables
+    - openvpn
+    - easy-rsa
+
+- name: Configure IP routing.
+  sysctl:
+    name: "net.ipv4.ip_forward"
+    value: 1
+
+- name: Copy easy-rsa configuration.
+  shell: cp /usr/share/easy-rsa/* /etc/openvpn/
+
+- name: Template easy-rsa files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/openvpn/{{ item }}"
+  with_items:
+    - vars
+
+- name: Copy non-interactive binaries.
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/openvpn/{{ item }}"
+    mode: 0700
+  with_items:
+    - build-ca-automated
+    - build-key-server-automated
+    - build-key-automated
+
+- name: Template server configuration file.
+  template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server.conf
+
+- name: Template the startup run script.
+  template:
+    src: run.sh.j2
+    dest: /run.sh
+    mode: 0700
+
+- name: Make logs directory.
+  file:
+    path: /var/log/openvpn
+    state: directory

@@ -1,0 +1,25 @@
++++
+date = "{{ date_markdown.stdout }}"
+title = "{{ aws_ec2_name }} software inventory"
+draft = false
+weight = 5
+
++++
+
+# Overview
+
+| Key              | Value              |
+| ---------------- | ------------------ |
+| Hostname         | {{ aws_ec2_name }} |
+| Date updated     | {{ date_markdown.stdout }} |
+| IP address       | {{ inventory_hostname }} |
+| Private DNS name | {{ ec2_facts.ansible_facts.ansible_ec2_local_hostname }} |
+{% if ec2_facts.ansible_facts.ansible_ec2_public_hostname is defined %}| Public DNS name | {{ ec2_facts.ansible_facts.ansible_ec2_public_hostname }} |{% endif %}
+
+# Apt Packages
+
+Generated from parsing of `apt list --installed`.
+
+| Package Installed             | Current Version               | Latest Update                 |
+| ----------------------------- | ----------------------------- | ----------------------------- |
+{{ apt_list_installed.stdout }}

@@ -1,0 +1,7 @@
+---
+# tasks file for aws.ec2_facts
+- name: Get EC2 facts.
+  ec2_remote_facts:
+    region: "{{ vpc.region }}"
+    filters: "{{ filters }}"
+  register: ec2_facts

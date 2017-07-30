@@ -1,0 +1,6 @@
+languageCode = "en-us"
+title = "{{ site_name }} inventory"
+baseURL = "http://{{ s3_bucket_name }}.s3-website-{{ region | default('us-east-1')}}.amazonaws.com"
+theme = "hugo-theme-learn"
+[params]
+  search = true

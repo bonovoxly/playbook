@@ -1,0 +1,3 @@
+---
+# defaults file for linux.terraform_install
+terraform_version: 0.8.2

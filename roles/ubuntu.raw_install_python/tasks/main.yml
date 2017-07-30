@@ -1,0 +1,7 @@
+---
+# tasks file for ubuntu.raw_install_python
+- name: Update Apt.
+  raw: which python || apt-get update
+
+- name: Install Python and Aptitude using the Ansible raw command.
+  raw: (which python && which aptitude) || (apt-get install -y python python-apt aptitude)

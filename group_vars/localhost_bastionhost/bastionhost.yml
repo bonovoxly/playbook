@@ -1,0 +1,60 @@
+---
+# bastionhost instance settings
+bastionhost:
+  host_settings:
+    ipv4_ip_forward: net.ipv4.ip_forward
+
+# AWS instance settings. Note that they are list of dictionaries.
+ec2_bastionhost:
+  assign_public_ip: yes
+  count_tag:
+    Name: "bastion_host"
+  exact_count: "1"
+  groups:
+    - "bastionhost_inbound"
+  instance_profile_name: "bastionhost_role"
+  instance_tags:
+    Name: "bastionhost"
+    Organization: b_dev
+    Environment: "aws"
+    Role: nat
+  instance_type: t2.nano
+  keypair: b_dev_demo
+  state: "running"
+  subnet: "aws-public"
+  tenancy: default
+  wait: yes
+iam_bastionhost:
+    iam_type: role
+    name: bastionhost_role
+    state: present
+securitygroups_bastionhost:
+  name: bastionhost_inbound
+  rules:
+    - proto: tcp
+      from_port: 22
+      to_port: 22
+      cidr_ip: "0.0.0.0/0"
+    - proto: icmp
+      from_port: -1
+      to_port: -1
+      cidr_ip: 10.148.0.0/16
+    - proto: tcp
+      from_port: 80
+      to_port: 80
+      cidr_ip: 10.148.0.0/16
+    - proto: tcp
+      from_port: 443
+      to_port: 443
+      cidr_ip: 10.148.0.0/16
+  tags:
+    Name: "bastionhost_inbound"
+    Organization: b_dev
+    Environment: "aws"
+securitygroups_bastionhost_internal:
+  name: bastionhost_inbound_internal
+  # no rules, those are dynamically created with the aws.bastionhost role
+  tags:
+    Name: "bastionhost_inbound_internal"
+    Organization: b_dev
+    Environment: "aws"

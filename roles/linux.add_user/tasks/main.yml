@@ -1,0 +1,16 @@
+---
+# tasks file for linux.add_user
+- name: Create users from list.
+  user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell }}"
+    groups: "{{ item.groups }}"
+  with_items: "{{ users_vars }}"
+
+- name: Copy shell_config when it exists.
+  copy:
+    src: "{{ item.shell_config }}"
+    dest: "/home/{{ item.name }}/{{ item.shell_config }}"
+    mode: 0600
+    owner: "{{ item.name }}"
+  with_items: "{{ users_vars }}"

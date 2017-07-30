@@ -1,0 +1,4 @@
+---
+# defaults file for aws.ec2_facts
+vpc:
+  region: "{{ region | default('us-east-1') }}"

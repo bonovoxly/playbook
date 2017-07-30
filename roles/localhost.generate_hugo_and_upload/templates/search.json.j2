@@ -1,0 +1,16 @@
+[
+    {
+        "uri": "/inventory/index",
+        "title": "Inventory Index",
+        "content": "The {{ site_name }} Inventory Index",
+        "tags": ["start", "intro"]
+    },
+{% for each in ec2_facts.instances %}
+{
+    "uri": "/inventory/{{ each.tags.Name }}",
+    "title": "{{ each.tags.Name }}-inventory",
+    "content": "{{ each.tags.Name }} inventory and stats",
+    "tags": ["{{ each.tags.Name }}", "instance", "{{ each.private_ip_address }}"]
+}{% if not loop.last %},{% else %}{% endif %}
+{% endfor %}
+]

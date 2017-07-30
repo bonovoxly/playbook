@@ -1,0 +1,25 @@
+---
+# tasks file for instance.volume
+- name: Make the volume mount directory.
+  file:
+    path: "{{ volume_path | default ('/data') }}"
+    state: directory
+
+- name: Format the filesystem.
+  filesystem:
+    fstype: "{{ filesystem_fstype | default('ext4') }}"
+    dev: "{{ filesystem_dev | default('/dev/xvde') }}"
+
+- name: Create systemd mount.
+  template:
+    src: systemd.mount.j2
+    dest: "/etc/systemd/system/{{ volume_name | default ('data') }}.mount"
+
+- name: Reload systemd.
+  command: systemctl daemon-reload
+
+- name: Mount the drive.
+  service:
+    name: "{{ volume_name | default('data') }}.mount"
+    enabled: yes
+    state: started

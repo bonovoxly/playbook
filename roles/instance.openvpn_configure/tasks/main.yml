@@ -1,0 +1,68 @@
+---
+- name: Create openvpn directory.
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /data/openvpn/keys
+    - /data/openvpn/logs
+
+- name: Template openvpn systemd files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - openvpn-download.service
+    - openvpn.service
+  register: openvpn_systemd_register
+
+- name: Reload systemd
+  command: systemctl daemon-reload
+
+- name: Restart openvpn download service.
+  service:
+    name: openvpn-download
+    state: restarted
+  when: openvpn_systemd_register.changed
+
+- name: Restart OpenVPN when the template changes.
+  service:
+    name: openvpn
+    state: restarted
+    enabled: yes
+  when: openvpn_systemd_register.changed
+
+- name: If OpenVPN has restarted, wait 30 seconds to create keys and files.
+  pause:
+    seconds: 30
+  when: openvpn_systemd_register.changed
+
+- name: Make sure OpenVPN service is running.
+  service:
+    name: openvpn
+    state: started
+
+- name: Get EC2 facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: Remove previous SSH proxy configuration.
+  blockinfile:
+    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/.ssh/config"
+    marker: "# {mark} {{ env }} kubernetes ssh_proxy config"
+    state: absent
+  delegate_to: 127.0.0.1
+  become: false
+  when: ssh_proxy == true
+
+- name: Configure SSH proxy host.
+  blockinfile:
+    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/.ssh/config"
+    marker: "# {mark} {{ env }} ssh_proxy config"
+    block: |
+      Host {{ hostvars[groups[env + '-openvpn_public'][0]]['ansible_ec2_local_ipv4'].split('.')[0] }}.{{ hostvars[groups[env + '-openvpn_public'][0]]['ansible_ec2_local_ipv4'].split('.')[1] }}.*.*
+           ProxyCommand ssh -i ~/.ssh/{{ keypair | default('id_rsa') }} -W %h:%p -q {{ hostvars[groups[env + '-openvpn_public'][0]]['ansible_env']['SUDO_USER'] }}@{{ hostvars[groups[env + '-openvpn_public'][0]]['ec2_facts']['ansible_facts']['ansible_ec2_public_hostname'] }}
+           ServerAliveInterval 30
+  delegate_to: 127.0.0.1
+  become: false
+  when: ssh_proxy == true

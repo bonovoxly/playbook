@@ -1,0 +1,14 @@
+---
+# tasks file for instance.ssh_aws_public_key
+- name: Add SSH public key to AWS System Log.
+  lineinfile:
+    dest: /etc/rc.local
+    insertbefore: 'exit 0'
+    line: '/usr/bin/ssh-keygen -y -f /etc/ssh/ssh_host_ecdsa_key'
+
+# Doing this because sometimes rc.local output doesn't get to the System Log.
+- name: Add SSH public key to cloud-init output as well.
+  copy:
+    src: ssh-to-system-log.sh
+    dest: /var/lib/cloud/scripts/per-boot/ssh-to-system-log.sh
+    mode: 0755

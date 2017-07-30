@@ -1,0 +1,3 @@
+---
+# defaults file for instance.cfssl_kubernetes
+volume_path: /data

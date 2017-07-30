@@ -1,0 +1,19 @@
+---
+# handlers file for instance.controller
+- name: restart_kube_apiserver
+  service:
+    name: kube-apiserver
+    enabled: yes
+    state: restarted
+
+- name: restart_kube_controller_manager
+  service:
+    name: kube-controller-manager
+    enabled: yes
+    state: restarted
+
+- name: restart_kube_scheduler
+  service:
+    name: kube-scheduler
+    enabled: yes
+    state: restarted

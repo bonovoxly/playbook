@@ -1,0 +1,69 @@
+---
+# tasks file for aws.bastionhost
+- name: Create bastionhost inbound rules.
+  ec2_group:
+    region: "{{ vpc.region }}"
+    description: "{{ securitygroups_bastionhost.tags.Name }} inbound rules"
+    name: "{{ securitygroups_bastionhost.name }}"
+    rules: "{{ securitygroups_bastionhost.rules }}"
+    vpc_id: "{{ vpc_id_fact }}"
+  register: bastionhost_inbound_results
+
+- name: Tag bastionhost inbound traffic rules.
+  ec2_tag:
+    region: "{{ vpc.region }}"
+    resource: "{{ bastionhost_inbound_results.group_id }}"
+    state: present
+    tags: "{{ securitygroups_bastionhost.tags }}"
+
+- name: Get subnet ID based on subnet variable in ec2_bastionhost dictionary.
+  ec2_vpc_subnet_facts:
+    region: "{{ vpc.region }}"
+    filters:
+      "tag:Name": "{{ ec2_bastionhost.subnet }}"
+  register: vpc_subnet_facts
+
+- name: Create bastionhost instance.
+  ec2:
+    region: "{{ vpc.region }}"
+    assign_public_ip: "{{ ec2_bastionhost.assign_public_ip }}"
+    count_tag:
+      Name: "{{ ec2_bastionhost.instance_tags.Name }}"
+    exact_count: "{{ ec2_bastionhost.exact_count }}"
+    group: "{{ ec2_bastionhost.groups }}"
+    instance_tags: "{{ ec2_bastionhost.instance_tags }}"
+    image: "{{ vpc.image }}"
+    instance_type: "{{ ec2_bastionhost.instance_type }}"
+    keypair: "{{ ec2_bastionhost.keypair }}"
+    source_dest_check: no
+    vpc_subnet_id: "{{ vpc_subnet_facts.subnets|map(attribute='id')|list|first }}"
+    wait: "{{ ec2_bastionhost.wait }}"
+  register: bastionhost_instance_results
+
+- name: Create bastionhost SSH inbound rules for internal instances.
+  ec2_group:
+    region: "{{ vpc.region }}"
+    description: "{{ securitygroups_bastionhost_internal.tags.Name }} SSH rules."
+    name: "{{ securitygroups_bastionhost_internal.name }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ bastionhost_instance_results.tagged_instances.0.private_ip }}/32"
+    vpc_id: "{{ vpc_id_fact }}"
+  register: bastionhost_inbound_internal_results
+
+- name: Tag bastionhost SSH inbound rules for internal instancensn.
+  ec2_tag:
+    region: "{{ vpc.region }}"
+    resource: "{{ bastionhost_inbound_internal_results.group_id }}"
+    state: present
+    tags: "{{ securitygroups_bastionhost_internal.tags }}"
+
+- name: Set public DNS fact.
+  set_fact:
+    bastion_public_dns_name: "{{ bastionhost_instance_results.tagged_instances.0.public_dns_name }}"
+
+- name: Print public IP address.
+  debug:
+    msg: "bastionhost public DNS: {{ bastion_public_dns_name }}"

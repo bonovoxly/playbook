@@ -1,0 +1,7 @@
+---
+# handlers file for instance.etcd
+- name: restart_etcd
+  service:
+    name: etcd
+    enabled: yes
+    state: restarted

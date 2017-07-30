@@ -1,0 +1,19 @@
+---
+# tasks file for instance.automated_updates
+- name: Disable the built-in apt periodic updates.
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/apt/apt.conf.d/{{ item }}"
+  with_items:
+    - 10periodic
+    - 20auto-upgrades
+
+- name: Create automated update systemd files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - automated-updates.service
+    - automated-updates.timer
+  notify:
+    - enable_automated_updates

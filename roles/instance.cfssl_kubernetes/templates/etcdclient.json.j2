@@ -1,0 +1,23 @@
+{
+  "CN": "etcdclient",
+  "hosts": [
+{% for each in groups['etcd'] %}
+    "{{ each }}",
+    "ip-{{ each.split(".")[0] }}-{{ each.split('.')[1] }}-{{ each.split('.')[2] }}-{{ each.split('.')[3] }}{% if ec2_facts.ansible_facts.ansible_ec2_placement_region == 'us-east-1' %}.ec2.internal{% else %}.{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}.compute.internal{% endif %}",
+{% endfor %}
+    "127.0.0.1"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "NY",
+      "O": "DevOps",
+      "ST": "New York",
+      "OU": "etcdclient"
+    }
+  ]
+}
