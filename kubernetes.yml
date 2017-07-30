@@ -1,0 +1,69 @@
+---
+# kubernetes.yml
+#
+# This playbook deploys a cfssl certificate instance, and a full Kubernetes cluster, integrated with AWS.
+# It is based on the `kubes` terraform. Requires internal SSH access, deploy the `openvpn.yml` system.
+#
+# Consider running `ansible-playbook localhost_ssh_scan.yml -e region-us-east-1` to get all SSH public keys.
+
+# Intial configuration Kubernetes instances
+# Initial raw configuration
+- hosts: cfssl:etcd:controller:node
+  become: yes
+  gather_facts: no
+  user: ubuntu
+  roles:
+    - role: ubuntu.raw_install_python
+
+# Configure CFSSL
+- hosts: cfssl
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.volume
+    - role: instance.docker_install
+    - role: instance.cfssl_kubernetes
+
+# Configure the etcd cluster
+- hosts: etcd
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.volume
+    - role: instance.docker_install
+    - role: instance.etcd
+
+# Configure the Kubernetes controller cluster
+- hosts: controller
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.volume
+    - role: instance.controller
+
+# Configure the kubelets
+- hosts: node
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.node
+
+# Deploy pods and services, including Weave-net, Kube-DNS
+- hosts: node[0]
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: kubernetes.initialization

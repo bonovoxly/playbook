@@ -1,0 +1,49 @@
+---
+# AWS settings
+# Route53 settings
+route53:
+  domain: us-west-2.compute.internal
+# VPC settings
+vpc:
+  name: aws
+  cidr_block: '10.148.0.0/16'
+  gateway: yes
+  image: ami-d06a90b0
+  image_user: ubuntu
+  keypair: b_dev_demo
+  region: 'us-west-2'
+  resource_tags:
+    Name: "aws-VPC"
+    Organization: b_dev
+    Environment: aws
+  subnets:
+    - cidr: "10.148.0.0/24"
+      az: "us-west-2a"
+      resource_tags:
+        Name: "aws-public"
+        Organization: b_dev
+        Environment: aws
+        Role: public_subnet
+        Route: public
+    - cidr: "10.148.1.0/24"
+      az: "us-west-2a"
+      resource_tags:
+        Name: "aws-private"
+        Organization: b_dev
+        Environment: aws
+        Role: private_subnet
+        Route: private
+  private_route:
+    routes:
+      dest: 0.0.0.0/0
+    resource_tags:
+        Name: "aws-internal_route"
+        Organization: b_dev
+        Environment: aws
+  public_route:
+    routes:
+      dest: 0.0.0.0/0
+    resource_tags:
+      Name: "aws-external_route"
+      Organization: b_dev
+      Environment: aws
