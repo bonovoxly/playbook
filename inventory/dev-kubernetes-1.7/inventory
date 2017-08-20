@@ -1,0 +1,33 @@
+[all_kubernetes:children]
+all
+
+[localhost]
+127.0.0.1
+
+# cfssl
+[cfssl]
+10.173.10.10
+
+# etcd
+[etcd]
+10.173.11.10
+10.173.12.10
+10.173.13.10
+
+# Kubernetes control plane instances
+[controller]
+10.173.21.10
+10.173.22.10
+10.173.23.10
+
+# nodes
+[node]
+10.173.31.10
+10.173.32.10
+10.173.33.10
+
+[openvpn]
+10.173.0.4
+
+[openvpn-public]
+ELASTICIPHERE
