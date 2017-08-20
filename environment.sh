@@ -9,4 +9,5 @@ fi
 
 
 echo "Ansible installed and configured."
+echo "Note that some Ansible modules will not find boto in a virtual environment.  It is recommended to install boto using 'sudo pip install boto'."
 echo "run 'source ./env/bin/activate'."
