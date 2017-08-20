@@ -1,0 +1,6 @@
+---
+# docker settings
+openvpn_docker_image: modops/openvpn-openvpn:20170114181518
+
+# split_tunnel
+split_tunnel: yes
