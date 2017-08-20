@@ -1,5 +1,5 @@
 ---
-# tasks file for instance.docker_install
+# tasks file for instance.docker
 # https://docs.docker.com/engine/installation/linux/ubuntulinux/
 - name: Install Docker apt key.
   apt_key:

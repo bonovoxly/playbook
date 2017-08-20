@@ -1,4 +1,4 @@
-instance.docker_install
+instance.docker
 =========
 
 Installs Docker on Ubuntu 16.04. Ensures that Docker is started.  Restarts if storage config changes.

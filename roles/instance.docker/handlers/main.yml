@@ -1,5 +1,5 @@
 ---
-# handlers file for instance.docker_install
+# handlers file for instance.docker
 - name: restart_docker
   service:
     name: docker
