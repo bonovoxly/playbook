@@ -24,7 +24,7 @@
     - role: instance.ssh_aws_public_key
     - role: instance.hosts
     - role: instance.volume
-    - role: instance.docker_install
+    - role: instance.docker
     - role: instance.cfssl_kubernetes
 
 # Configure the etcd cluster
@@ -36,7 +36,7 @@
     - role: instance.ssh_aws_public_key
     - role: instance.hosts
     - role: instance.volume
-    - role: instance.docker_install
+    - role: instance.docker
     - role: instance.etcd
 
 # Configure the Kubernetes controller cluster
