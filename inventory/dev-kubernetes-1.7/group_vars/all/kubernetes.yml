@@ -1,6 +1,4 @@
 ---
-# vars/kubernetes.yml
-
 # Kubernetes controller DNS entry (set this to a controller IP address if internal DNS is not used)
 controller_dns: "{{ env }}-controller.{{ dns }}"
 
@@ -18,10 +16,6 @@ etcd_docker_image: quay.io/coreos/etcd:v3.1.10
 # Kubernetes CNI version
 # https://github.com/containernetworking/cni/releases
 kubernetes_cni_version: v0.5.2
-
-# Kubernetes version
-# https://github.com/kubernetes/kubernetes/releases
-#kubernetes_version: v1.5.7
 
 # Kubernetes service cluster DNS and IP cidr
 service_cluster_dns: 10.254.254.10
