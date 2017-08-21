@@ -1,5 +1,11 @@
-[all_kubernetes:children]
-all
+[all:vars]
+# ansible_ssh_private_key_file=~/.ssh/dev # this is good if you have multiple environments with multiple SSH keys
+cluster_name=dev-kubernetes-17
+dns=dev.example.internal
+env=dev
+kubernetes_version=v1.7.3
+region=us-east-1
+
 
 [localhost]
 127.0.0.1
@@ -19,6 +25,10 @@ all
 10.173.21.10
 10.173.22.10
 10.173.23.10
+
+[controller-node:children]
+controller
+node
 
 # nodes
 [node]
