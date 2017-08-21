@@ -1,0 +1,26 @@
+---
+# openvpn.yml
+# ansible-playbook -i inventory/dev-kubernetes-1.7 openvpn.yml 
+# requires getting and configuring the openvpn-public IP address in the inventory file
+
+# Initial raw configuration
+- hosts: "openvpn-public"
+  become: yes
+  gather_facts: no
+  user: ubuntu
+  roles:
+    - role: ubuntu.raw_install_python
+
+# Configure openvpn instance (skipped if not created)
+- hosts: "openvpn-public"
+  become: yes
+  gather_facts: yes
+  remote_user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.docker
+    - role: instance.openvpn_configure
+    - role: instance.openvpn_create_user_config
+    - role: instance.prometheus_node_exporter
+
