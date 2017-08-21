@@ -22,7 +22,7 @@ Dependencies
 ------------
 
 - Docker installed.
-- Configures a systemd service (this was tested using Ubutnu 16.04). Requires that Docker be installed, in this case, it uses the `instance.docker_install` role.  
+- Configures a systemd service (this was tested using Ubutnu 16.04). Requires that Docker be installed, in this case, it uses the `instance.docker` role.
 
 Example Playbook
 ----------------
