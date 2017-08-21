@@ -7,6 +7,11 @@ tls-client
 client
 resolv-retry infinite
 remote {{ openvpn_remote }} 1194 udp
+{% if split_tunnel is defined %}
+route-nopull
+route {{ ansible_ec2_local_ipv4.split('.')[0] }}.{{ ansible_ec2_local_ipv4.split('.')[1] }}.0.0 255.255.0.0
+dhcp-option DNS {{ ansible_ec2_local_ipv4.split('.')[0] }}.{{ ansible_ec2_local_ipv4.split('.')[1] }}.0.2
+{% endif %}
 lport 0
 verify-x509-name openvpn name
 #auth-user-pass
@@ -23,3 +28,4 @@ verb 3
 <key>
 {{ openvpn_user_key.stdout }}
 </key>
+
