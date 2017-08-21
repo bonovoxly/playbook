@@ -1,0 +1,81 @@
+---
+# kubernetes-1.7.yml
+#
+# This playbook deploys a full Kubernetes 1.7 (with RBAC) cluster to AWS.
+# Requires using Terraform to create.
+# See https://blog.billyc.io Kubernetes blog post.
+#
+
+# Intial Python configuration Kubernetes instances
+# Initial raw configuration
+- hosts: etcd:controller:node
+  become: yes
+  gather_facts: no
+  user: ubuntu
+  roles:
+    - role: ubuntu.raw_install_python
+  tags:
+    - raw
+
+# Configure CFSSL
+- hosts: cfssl
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.cfssl_kubernetes_rbac
+    - role: instance.prometheus_node_exporter
+  tags:
+    - cfssl
+
+# Configure the etcd cluster
+- hosts: etcd
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.volume
+    - role: instance.docker
+    - role: instance.etcd
+    - role: instance.prometheus_node_exporter
+  tags:
+    - etcd
+
+# Configure the Kubernetes controller cluster
+- hosts: controller
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.volume
+    - role: instance.controller_rbac
+    - role: instance.prometheus_node_exporter
+  tags:
+    - controller
+
+# Configure the kubelets
+- hosts: node
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.node_rbac
+  tags:
+    - node
+
+# Deploy Weave-net and Kube-DNS
+- hosts: controller[0]
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: kubernetes.init_rbac
+      tags:
+        - kinit
+
