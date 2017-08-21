@@ -1,0 +1,26 @@
+---
+# cfss_deploy.yml
+#
+# This playbook deploys a CFSSL instance. It is meant to be interacted with via SSH and not the API.
+#
+
+# Initial raw configuration
+- hosts: cfssl
+  become: yes
+  gather_facts: no
+  user: ubuntu
+  roles:
+    - role: ubuntu.raw_install_python
+
+# Configure CFSSL
+- hosts: cfssl
+  become: yes
+  gather_facts: yes
+  user: ubuntu
+  roles:
+    - role: instance.ssh_aws_public_key
+    - role: instance.hosts
+    - role: instance.volume
+    - role: instance.docker
+    - role: instance.cfssl
+    - role: instance.prometheus_node_exporter
