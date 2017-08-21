@@ -1,0 +1,54 @@
+---
+# tasks file for kube.init-rbac
+- name: Create the kubectl directory.
+  file:
+    path: /data/kubectl
+    state: directory
+
+- name: Template in the Weave daemonset.
+  template:
+    src: weave-net.yml.j2
+    dest: /data/kubectl/weave-net.yml
+
+- name: Check for the Weave password.
+  shell: kubectl --namespace kube-system get secret | grep weave-passwd | awk '{ print $1 }'
+  register: weave_secret
+
+- name: Generate Weave password secret if it doesn't exist.
+  shell: |
+    < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c48
+  register: weave_pass
+  when: weave_secret.stdout.find('weave-passwd') == -1
+
+- name: Create the Weave secret.
+  shell: |
+    kubectl create secret generic weave-passwd -n kube-system --from-literal=weave-passwd='{{ weave_pass.stdout }}'
+  when: weave_secret.stdout.find('weave-passwd') == -1
+
+- name: Check for Weave daemonset.
+  shell: kubectl --namespace kube-system get daemonset | grep weave | awk '{ print $1 }'
+  register: weave_daemonset
+
+- name: Deploy the Weave CNI.
+  shell: kubectl apply -f /data/kubectl/weave-net.yml
+  when: weave_daemonset.stdout.find('weave') == -1
+
+- name: Template the kube-dns files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/data/kubectl/{{ item }}"
+  with_items: 
+    - kube-dns-serviceaccount.yml
+    - kube-dns-configmap.yml
+    - kube-dns-controller.yml
+    - kube-dns-service.yml
+
+- name: Deploy the kube-dns service account.
+  shell: kubectl apply -f /data/kubectl/kube-dns-serviceaccount.yml
+
+- name: Deploy the kube-dns deployment.
+  shell: kubectl apply -f /data/kubectl/kube-dns-controller.yml
+
+- name: Deploy the kube-dns service.
+  shell: kubectl apply -f /data/kubectl/kube-dns-service.yml
+

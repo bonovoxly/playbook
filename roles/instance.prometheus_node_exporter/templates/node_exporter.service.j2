@@ -1,0 +1,11 @@
+[Unit]
+Description=Prometheus node exporter
+
+[Service]
+ExecStart=/usr/local/sbin/node_exporter --collectors.enabled "conntrack,diskstats,entropy,filefd,filesystem,loadavg,meminfo,netdev,netstat,sockstat,stat,systemd,time,uname,vmstat" \
+ExecStop=-/usr/bin/pkill node_exporter
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

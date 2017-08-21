@@ -1,0 +1,21 @@
+[Unit]
+Description=Kubernetes Controller Manager - {{ kubernetes_version }}
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+RequiresMountsFor={{ volume_path }}
+
+[Service]
+ExecStart=/usr/sbin/kube-controller-manager \
+  --address=0.0.0.0 \
+  --cloud-provider=aws \
+  --cloud-config=/var/lib/kubernetes/aws.conf \
+  --cluster-name={{ cluster_name }} \
+  --leader-elect=true \
+  --master=http://{{ inventory_hostname }}:8080 \
+  --root-ca-file=/var/lib/kubernetes/ssl/controller-ca.pem \
+  --service-account-private-key-file=/var/lib/kubernetes/ssl/service-account-key.pem \
+  --service-cluster-ip-range={{ service_cluster_ip_range }}
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+{
+  "CN": "system:node:ip-{{ item.split(".")[0] }}-{{ item.split('.')[1] }}-{{ item.split('.')[2] }}-{{ item.split('.')[3] }}{% if ec2_facts.ansible_facts.ansible_ec2_placement_region == 'us-east-1' %}.ec2.internal{% else %}.{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}.compute.internal{% endif %}",
+  "hosts": [
+    "{{ item }}",
+    "ip-{{ item.split(".")[0] }}-{{ item.split('.')[1] }}-{{ item.split('.')[2] }}-{{ item.split('.')[3] }}{% if ec2_facts.ansible_facts.ansible_ec2_placement_region == 'us-east-1' %}.ec2.internal{% else %}.{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}.compute.internal{% endif %}",
+    "127.0.0.1"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "NY",
+      "O": "system:nodes",
+      "ST": "New York",
+      "OU": "Cluster"
+    }
+  ]
+}

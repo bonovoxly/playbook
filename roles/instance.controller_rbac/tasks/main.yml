@@ -1,0 +1,164 @@
+---
+# tasks file for instance.controller
+- name: Get ec2_facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: Set domain suffix.
+  set_fact:
+    domain_suffix: "{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}"
+
+- name: Set AWS hostname
+  set_fact:
+    aws_hostname: "{{ ec2_facts.ansible_facts.ansible_ec2_hostname }}"
+
+- name: Create the {{ volume_path }} directory.
+  file:
+    path: "{{ volume_path }}/controller/ssl"
+    state: directory
+
+- name: Symlink /var/lib/kubernetes.
+  file:
+    src: "{{ volume_path }}/controller"
+    dest: /var/lib/kubernetes
+    state: link
+
+- name: Copy in CFSSL certificates.
+  copy:
+    src: "./ssl/{{ env }}/{{ item }}"
+    dest: "{{ volume_path }}/controller/ssl/{{ item }}"
+  with_items:
+    - controller-ca.pem
+    - controller-ca-key.pem
+    - "{{ inventory_hostname }}.pem"
+    - "{{ inventory_hostname }}-key.pem"
+    - etcdclient-ca.pem
+    - etcdclient-key.pem
+    - etcdclient.pem
+    - service-account.pem
+    - service-account-key.pem
+  notify:
+    - restart_kube_apiserver
+    - restart_kube_controller_manager
+
+- name: Create a SSL cert and CA PEM file.
+  shell: cat {{ volume_path }}/controller/ssl/{{ inventory_hostname }}.pem {{ volume_path }}/controller/ssl/controller-ca.pem > {{ volume_path }}/controller/ssl/controller-cert-ca.pem
+
+- name: Download Kubernetes.
+  get_url:
+    url: "https://dl.k8s.io/{{ kubernetes_version }}/kubernetes-server-linux-amd64.tar.gz"
+    dest: "/opt/{{ kubernetes_version }}-kubernetes-server-linux-amd64.tar.gz"
+
+- name: Untar the Kubernetes file.
+  unarchive:
+    copy: no
+    src: "/opt/{{ kubernetes_version }}-kubernetes-server-linux-amd64.tar.gz"
+    dest: /opt/
+
+- name: Copy Kubernetes binaries to /usr/sbin.
+  copy:
+    remote_src: true
+    src: "/opt/kubernetes/server/bin/{{ item }}"
+    dest: "/usr/sbin/{{ item }}"
+    mode: 0700
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+    - kubectl
+
+- name: Stat the bootstrap token file.
+  stat:
+    path: "{{ volume_path }}/controller/token_rbac.csv"
+  register: token_file
+
+- name: Generate TLS bootstrap token.
+  shell: |
+    head -c 16 /dev/urandom | od -An -t x | tr -d ' '
+  register: bootstrap_token
+  when: token_file.stat.exists == False
+
+- name: Copy token_rbac.csv.
+  shell: |
+    echo '{{ bootstrap_token.stdout }},kubelet-bootstrap,10001,"system:kubelet-bootstrap"' > {{ volume_path }}/controller/token_rbac.csv
+  notify:
+    - restart_kube_apiserver
+  when: token_file.stat.exists == False
+
+- name: Disable Kubernetes AWS security group modifications.
+  template:
+    src: aws.conf.j2
+    dest: "{{ volume_path }}/controller/aws.conf"
+
+- name: Template controller systemd files.
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+  with_items:
+    - kube-apiserver.service
+    - kube-controller-manager.service
+    - kube-scheduler.service
+  notify:
+    - restart_kube_apiserver
+    - restart_kube_controller_manager
+    - restart_kube_scheduler
+
+- name: systemctl daemon-reload.
+  command: systemctl daemon-reload
+
+# - name: Create kubectl config.
+#   shell: >
+#     /usr/sbin/kubectl config set-cluster {{ env }} \
+#       --certificate-authority={{ volume_path }}/controller/ssl/controller-ca.pem \
+#       --embed-certs=true \
+#       --server=https://{{ ansible_eth0.ipv4.address }}:6443
+
+- name: Flush handlers (restart/start Kubernetes services).
+  meta: flush_handlers
+
+- name: Make sure Kubernetes services are started.
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: Wait for port 8080 to be available.
+  wait_for:
+    port: 8080
+    timeout: 120
+
+# serviceaccount.kubeconfig
+- name: Configure kubectl for admin.
+  shell: >
+    /usr/sbin/kubectl config set-cluster {{ env }} \
+      --certificate-authority=/var/lib/kubernetes/ssl/controller-ca.pem \
+      --embed-certs=true \
+      --server=https://{{ controller_dns }}:6443 \
+      --kubeconfig=/root/serviceaccount.kubeconfig
+
+- name: Configure kubectl admin credentials.
+  shell: >
+    /usr/sbin/kubectl config set-credentials serviceaccount \
+      --client-certificate=/var/lib/kubernetes/ssl/service-account.pem \
+      --client-key=/var/lib/kubernetes/ssl/service-account-key.pem \
+      --embed-certs=true \
+      --kubeconfig=/root/serviceaccount.kubeconfig
+
+- name: Set kubectl admin context.
+  shell: >
+    kubectl config set-context alpha-kubernetes \
+      --cluster={{ env }} \
+      --user=serviceaccount \
+      --kubeconfig=/root/serviceaccount.kubeconfig
+
+- name: Use the kubectl admin context.
+  shell: >
+    /usr/sbin/kubectl config use-context alpha-kubernetes \
+      --cluster={{ env }} \
+      --user=serviceaccount \
+      --kubeconfig=/root/serviceaccount.kubeconfig
+

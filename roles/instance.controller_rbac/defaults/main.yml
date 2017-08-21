@@ -1,0 +1,4 @@
+# defaults file for instance.controller_rbac
+token_rbac_csv: |
+ 41716c3f2f16b14a24a969cd0ee9e989,kubelet-bootstrap,10001,"system:kubelet-bootstrap"
+volume_path: /data

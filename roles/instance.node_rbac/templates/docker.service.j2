@@ -1,0 +1,15 @@
+Description=Docker Application Container Engine
+Documentation=http://docs.docker.io
+
+[Service]
+ExecStart=/usr/bin/docker daemon \
+  --iptables=false \
+  --ip-masq=false \
+  --host=unix:///var/run/docker.sock \
+  --log-level=error \
+  --storage-driver=overlay2
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

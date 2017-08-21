@@ -1,0 +1,14 @@
+[Unit]
+Description=Kubernetes Scheduler
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes - {{ kubernetes_version }}
+RequiresMountsFor={{ volume_path }}
+
+[Service]
+ExecStart=/usr/sbin/kube-scheduler \
+  --leader-elect=true \
+  --master=http://{{ ansible_eth0.ipv4.address }}:8080
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

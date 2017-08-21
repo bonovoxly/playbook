@@ -1,0 +1,36 @@
+---
+- name: Download Prometheus node exporter binary.
+  get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v0.14.0/node_exporter-0.14.0.linux-amd64.tar.gz
+    dest: /root/node_exporter.tar.gz
+
+- name: Untar the Prometheus node exporter binary.
+  shell: >
+    tar -xzvf node_exporter.tar.gz
+  args:
+    chdir: /root
+    creates: /root/node_exporter-0.14.0.linux-amd64/node_exporter
+
+- name: Copy the binary to /usr/local/sbin.
+  copy:
+    src: /root/node_exporter-0.14.0.linux-amd64/node_exporter
+    dest: /usr/local/sbin/node_exporter
+    owner: root
+    group: root
+    mode: 0700
+    remote_src: yes
+
+- name: Template the Prometheus node exporter service.
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Reload systemd.
+  command: systemctl daemon-reload
+
+- name: Start the Prometheus node exporter service.
+  service:
+    name: node_exporter
+    state: started
+    enabled: yes
+

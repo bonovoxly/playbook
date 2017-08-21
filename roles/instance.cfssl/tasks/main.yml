@@ -1,0 +1,37 @@
+---
+# tasks file for instance.cfssl
+- name: Create the {{ volume_path }} directory.
+  file:
+    path: "{{ volume_path }}/cfssl/{{ item }}"
+    state: directory
+  with_items:
+    - json
+    - certs
+
+- name: Template the CFSSL systemd service file.
+  template:
+    src: cfssl.service.j2
+    dest: /etc/systemd/system/cfssl.service
+  register: cfssl_systemd
+
+- name: Reload systemd.
+  command: systemctl daemon-reload
+
+- name: Restart CFSSL when config has changed.
+  service:
+    name: cfssl
+    enabled: yes
+    state: restarted
+  when: cfssl_systemd.changed
+
+- name: Ensure that CFSSL is runnning.
+  service:
+    name: cfssl
+    state: started
+
+- name: Wait for CFSSL to start.
+  wait_for:
+    delay: 2
+    port: 8888
+    timeout: 60
+

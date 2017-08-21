@@ -1,0 +1,193 @@
+---
+# tasks file for instance.cfssl_kubernetes
+- name: Get ec2_facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: Set domain suffix.
+  set_fact:
+    domain_suffix: "{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}"
+
+- name: Create the {{ volume_path }} directory.
+  file:
+    path: "{{ volume_path }}/cfssl/{{ env }}-kube/{{ item }}"
+    state: directory
+  with_items:
+    - json
+    - certs
+
+- name: Template in CFSSL CA config file.
+  template:
+    src: ca-config.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/ca-config.json"
+
+- name: Template in CFSSL CA CSR for each service.
+  template:
+    src: ca-csr.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/{{ item }}-ca-csr.json"
+  with_items:
+    - etcd
+    - etcdclient
+    - controller
+
+- name: Template in the etcd server CFSSL SSL config files.
+  template:
+    src: etcd.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/{{ item }}-etcd.json"
+  with_items: "{{ groups['etcd'] }}"
+
+- name: Template the etcd client config file.
+  template:
+    src: etcdclient.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/etcdclient.json"
+
+- name: Template in the controller server CFSSL SSL config files.
+  template:
+    src: controller.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/{{ item }}-controller.json"
+  with_items: "{{ groups['controller'] }}"
+
+- name: Template the kube-proxy key config.
+  template:
+    src: kube-proxy.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/kube-proxy.json"
+
+- name: Template the service-account key config.
+  template:
+    src: admin.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/service-account.json"
+
+- name: Template the CFSSL systemd service file.
+  template:
+    src: cfssl.service.j2
+    dest: /etc/systemd/system/cfssl.service
+  register: cfssl_systemd
+
+- name: Template the node CFSSL config files.
+  template:
+    src: node.json.j2
+    dest: "{{ volume_path }}/cfssl/{{ env }}-kube/json/{{ item }}-node.json"
+  with_items: "{{ groups['node'] }}"
+
+- name: Reload systemd.
+  command: systemctl daemon-reload
+
+- name: Restart CFSSL when config has changed.
+  service:
+    name: cfssl
+    enabled: yes
+    state: restarted
+  when: cfssl_systemd.changed
+
+- name: Ensure that CFSSL is runnning.
+  service:
+    name: cfssl
+    state: started
+
+- name: Wait for CFSSL to start.
+  wait_for:
+    delay: 2
+    port: 8888
+    timeout: 60
+
+- name: Generate CAs.
+  shell: >
+    docker exec cfssl \
+    sh -c "/go/bin/cfssl gencert -initca /cfssl/{{ env }}-kube/json/{{ item }}-ca-csr.json \
+    | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/{{ item }}-ca"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/{{ item }}-ca-key.pem"
+  with_items:
+    - etcd
+    - etcdclient
+    - controller
+
+- name: Generate certificate and keys for etcd cluster.
+  shell: >
+    docker exec cfssl \
+      sh -c "/go/bin/cfssl gencert -ca /cfssl/{{ env }}-kube/certs/etcd-ca.pem \
+      -ca-key /cfssl/{{ env }}-kube/certs/etcd-ca-key.pem \
+      -config /cfssl/{{ env }}-kube/json/ca-config.json \
+      -profile=peer \
+      /cfssl/{{ env }}-kube/json/{{ item }}-etcd.json \
+      | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/{{ item }}"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/{{ item }}-key.pem"
+  with_items: "{{ groups['etcd'] }}"
+
+- name: Generate certificate and keys for etcdclients.
+  shell: >
+    docker exec cfssl \
+      sh -c "/go/bin/cfssl gencert -ca /cfssl/{{ env }}-kube/certs/{{ item }}-ca.pem \
+      -ca-key /cfssl/{{ env }}-kube/certs/{{ item }}-ca-key.pem \
+      -config /cfssl/{{ env }}-kube/json/ca-config.json \
+      -profile=peer \
+      /cfssl/{{ env }}-kube/json/{{ item }}.json \
+      | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/{{ item }}"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/{{ item }}-key.pem"
+  with_items:
+    - etcdclient
+
+- name: Generate certificate and keys for controller cluster.
+  shell: >
+    docker exec cfssl \
+      sh -c "/go/bin/cfssl gencert -ca /cfssl/{{ env }}-kube/certs/controller-ca.pem \
+      -ca-key /cfssl/{{ env }}-kube/certs/controller-ca-key.pem \
+      -config /cfssl/{{ env }}-kube/json/ca-config.json \
+      -profile=peer \
+      /cfssl/{{ env }}-kube/json/{{ item }}-controller.json \
+      | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/{{ item }}"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/{{ item }}-key.pem"
+  with_items: "{{ groups['controller'] }}"
+
+- name: Generate kube-proxy certificate and key.
+  shell: >
+    docker exec cfssl \
+      sh -c "/go/bin/cfssl gencert -ca /cfssl/{{ env }}-kube/certs/controller-ca.pem \
+      -ca-key /cfssl/{{ env }}-kube/certs/controller-ca-key.pem \
+      -config /cfssl/{{ env }}-kube/json/ca-config.json \
+      -profile=peer \
+      /cfssl/{{ env }}-kube/json/kube-proxy.json \
+      | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/kube-proxy"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/kube-proxy-key.pem"
+
+- name: Generate service account certificate and key.
+  shell: >
+    docker exec cfssl \
+      sh -c "/go/bin/cfssl gencert -ca /cfssl/{{ env }}-kube/certs/controller-ca.pem \
+      -ca-key /cfssl/{{ env }}-kube/certs/controller-ca-key.pem \
+      -config /cfssl/{{ env }}-kube/json/ca-config.json \
+      -profile=peer \
+      /cfssl/{{ env }}-kube/json/service-account.json \
+      | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/service-account"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/service-account-key.pem"
+
+- name: Generate certificate and keys for each node.
+  shell: >
+    docker exec cfssl \
+      sh -c "/go/bin/cfssl gencert -ca /cfssl/{{ env }}-kube/certs/controller-ca.pem \
+      -ca-key /cfssl/{{ env }}-kube/certs/controller-ca-key.pem \
+      -config /cfssl/{{ env }}-kube/json/ca-config.json \
+      -profile=peer \
+      /cfssl/{{ env }}-kube/json/{{ item }}-node.json \
+      | /go/bin/cfssljson -bare /cfssl/{{ env }}-kube/certs/{{ item }}"
+  args:
+    creates: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/{{ item }}-key.pem"
+  with_items: "{{ groups['node'] }}"
+
+- name: Create local SSL directory for fetch.
+  delegate_to: 127.0.0.1
+  file:
+    path: ./ssl
+    state: directory
+  become: false
+
+- name: Sync SSL certificates.
+  synchronize:
+    src: "{{ volume_path }}/cfssl/{{ env }}-kube/certs/"
+    dest: "./ssl/{{ env }}"
+    mode: pull
