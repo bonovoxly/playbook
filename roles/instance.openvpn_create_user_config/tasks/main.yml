@@ -1,12 +1,16 @@
 ---
 # tasks file for instance.openvpn_create_user_config
-- name: Get public DNS name for OpenVPN remote configuration.
+- name: Get local ec2 facts.
+  ec2_facts:
+  register: ec2_facts
+
+- name: Debug local IP address.
+  debug:
+    msg: "{{ ansible_ec2_local_ipv4 }}"
+
+- name: Get public IP for OpenVPN remote configuration.
   set_fact:
-    openvpn_remote: "{{ hostvars['127.0.0.1']['ec2_facts']['instances']
-                 | selectattr('tags.Role', 'equalto', 'vpn')
-                 | map(attribute='public_dns_name')
-                 | list
-                 | first }}"
+    openvpn_remote: "{{ groups['openvpn-public'][0] }}"
 
 - name: Create user keys.
   shell: |
@@ -44,5 +48,5 @@
 - name: Fetch OVPN config.
   fetch:
     src: /data/{{ openvpn_user }}.ovpn
-    dest: "{{ hostvars['127.0.0.1']['ansible_env']['HOME'] }}/Desktop/{{ env }}-{{ openvpn_user }}.ovpn"
+    dest: "~/Desktop/{{ inventory_hostname }}-{{ openvpn_user }}.ovpn"
     flat: yes
