@@ -31,7 +31,7 @@
 - name: Import SSH public keys - public IP addresses.
   lineinfile:
     dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
-    line: "{{ item.0.public_dns_name}} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(env) }}"
+    line: "{{ item.0.public_dns_name}},{{ item.0.public_ip_address }} ecdsa-sha2-nistp256 {{ item.1.stdout }} # {{ marker_vars|default(env) }}"
   when: item.0.state == 'running' and item.0.public_dns_name != ''
   with_together:
     - "{{ ec2_facts.instances }}"
