@@ -24,7 +24,6 @@
   user: ubuntu
   roles:
     - role: instance.cfssl_kubernetes_rbac
-    - role: instance.prometheus_node_exporter
   tags:
     - cfssl
 
