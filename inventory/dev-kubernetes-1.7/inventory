@@ -1,18 +1,9 @@
-[all:vars]
-# ansible_ssh_private_key_file=~/.ssh/dev # this is good if you have multiple environments with multiple SSH keys
-dns=dev.example.internal
-env=dev
-kubernetes_cluster_id=dev-kubernetes-17
-kubernetes_version=v1.7.3
-region=us-east-1
-
-
 [localhost]
 127.0.0.1
 
 # cfssl
 [cfssl]
-10.173.10.10
+10.173.4.10
 
 # etcd
 [etcd]

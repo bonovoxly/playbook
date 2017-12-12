@@ -12,6 +12,23 @@
   set_fact:
     aws_hostname: "{{ ec2_facts.ansible_facts.ansible_ec2_hostname }}"
 
+- name: Get the controller ELB IP addresses.
+  shell: host {{ controller_dns }} | grep "address" | awk '{ print $NF }'
+  register: controller_elb_ip
+  run_once: true
+
+- name: Debug variable.
+  debug:
+    msg: "{{ controller_elb_ip }}"
+
+- name: Debug the ELB IP address.
+  debug:
+    msg: "{{ item[0] }}"
+  when: inventory_hostname == item[1]
+  with_together:
+    - "{{ controller_elb_ip.stdout_lines }}"
+    - "{{ groups['controller'] }}"
+
 - name: Create the {{ volume_path }} directory.
   file:
     path: "{{ volume_path }}/controller/ssl"
@@ -90,28 +107,30 @@
     src: aws.conf.j2
     dest: "{{ volume_path }}/controller/aws.conf"
 
+- name: Template the kube-apiserver (uses the ELB selection logic).
+  template:
+    src: kube-apiserver.service.j2
+    dest: /etc/systemd/system/kube-apiserver.service
+  when: inventory_hostname == item[1]
+  with_together:
+    - "{{ controller_elb_ip.stdout_lines }}"
+    - "{{ groups['controller'] }}"
+  notify:
+    - restart_kube_apiserver
+
 - name: Template controller systemd files.
   template:
     src: "{{ item }}.j2"
     dest: "/etc/systemd/system/{{ item }}"
   with_items:
-    - kube-apiserver.service
     - kube-controller-manager.service
     - kube-scheduler.service
   notify:
-    - restart_kube_apiserver
     - restart_kube_controller_manager
     - restart_kube_scheduler
 
 - name: systemctl daemon-reload.
   command: systemctl daemon-reload
-
-# - name: Create kubectl config.
-#   shell: >
-#     /usr/sbin/kubectl config set-cluster {{ env }} \
-#       --certificate-authority={{ volume_path }}/controller/ssl/controller-ca.pem \
-#       --embed-certs=true \
-#       --server=https://{{ ansible_eth0.ipv4.address }}:6443
 
 - name: Flush handlers (restart/start Kubernetes services).
   meta: flush_handlers

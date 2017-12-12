@@ -1,26 +1,42 @@
 ---
-# Kubernetes controller DNS entry (set this to a controller IP address if internal DNS is not used)
+# Kubernetes controller DNS entry (set this to a controller IP address if internal DNS is not used) (from Terraform)
 controller_dns: "{{ env }}-controller.{{ dns }}"
 
 # Kubernetes internal cluster DNS
 cluster_domain: cluster.local
-# Kubernetes cluster ID (matches Terraform tag 'KubernetesCluster')
+
+# internal DNS domain (from Terraform)
+dns: dev.example.internal 
 
 # Docker version
 docker_version: 1.12.6
+
+# environment (from Terraform) 
+env: dev
 
 # etcd Docker version
 # https://quay.io/repository/coreos/etcd?tab=tags
 etcd_docker_image: quay.io/coreos/etcd:v3.1.10
 
+# Kubernetes cluster ID (matches Terraform tag 'KubernetesCluster')
+kubernetes_cluster_id: dev-kubernetes-17
+
 # Kubernetes CNI version
 # https://github.com/containernetworking/cni/releases
 kubernetes_cni_version: v0.5.2
+
+# Region
+region: us-east-1
 
 # Kubernetes service cluster DNS and IP cidr
 service_cluster_dns: 10.254.254.10
 service_cluster_ip_range: 10.254.254.0/24
 
+# Kubernetes version
+kubernetes_version: v1.7.10
+
 # EBS volume mount path.
 volume_path: /data
+
+
 

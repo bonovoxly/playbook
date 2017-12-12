@@ -8,6 +8,15 @@
   set_fact:
     domain_suffix: "{{ ec2_facts.ansible_facts.ansible_ec2_placement_region }}"
 
+- name: Get the controller ELB IP addresses.
+  shell: host {{ controller_dns }} | grep "address" | awk '{ print $NF }'
+  register: controller_elb_ip
+  run_once: true
+
+- name: Debug variable.
+  debug:
+    msg: "{{ controller_elb_ip }}"
+
 - name: Create the {{ volume_path }} directory.
   file:
     path: "{{ volume_path }}/cfssl/{{ env }}-kube/{{ item }}"

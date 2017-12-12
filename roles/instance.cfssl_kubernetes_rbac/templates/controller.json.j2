@@ -3,6 +3,9 @@
   "hosts": [
     "{{ controller_dns }}",
     "{{ item }}",
+    {% for each in controller_elb_ip.stdout_lines %}
+    "{{ each }}",
+    {% endfor %}
     "{{ service_cluster_ip_range.split('.')[0] }}.{{ service_cluster_ip_range.split('.')[1] }}.{{ service_cluster_ip_range.split('.')[2] }}.1",
     "kubernetes",
     "kubernetes.default",

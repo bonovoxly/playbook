@@ -6,7 +6,7 @@ RequiresMountsFor={{ volume_path }}
 [Service]
 ExecStart=/usr/sbin/kube-apiserver \
   --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
-  --advertise-address={{ ansible_eth0.ipv4.address }} \
+  --advertise-address={{ item[0] }} \
   --allow-privileged=true \
   --apiserver-count=3 \
   --audit-log-maxage=30 \

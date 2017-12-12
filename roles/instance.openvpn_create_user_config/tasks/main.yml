@@ -10,7 +10,7 @@
 
 - name: Get public IP for OpenVPN remote configuration.
   set_fact:
-    openvpn_remote: "{{ groups['openvpn-public'][0] }}"
+    openvpn_remote: "{{ inventory_hostname }}"
 
 - name: Create user keys.
   shell: |

@@ -1,10 +1,10 @@
 ---
 # openvpn.yml
-# ansible-playbook -i inventory/dev-kubernetes-1.7 openvpn.yml 
-# requires getting and configuring the openvpn-public IP address in the inventory file
+# ansible-playbook -i inventory/<INVENTORYDIRECTORY> openvpn_deploy.yml 
+# dynamic inventory required for the initial configuration
 
 # Initial raw configuration
-- hosts: "openvpn-public"
+- hosts: "*openvpn*"
   become: yes
   gather_facts: no
   user: ubuntu
@@ -12,7 +12,7 @@
     - role: ubuntu.raw_install_python
 
 # Configure openvpn instance (skipped if not created)
-- hosts: "openvpn-public"
+- hosts: "*openvpn"
   become: yes
   gather_facts: yes
   remote_user: ubuntu

@@ -52,6 +52,8 @@
     - role: instance.hosts
     - role: instance.volume
     - role: instance.controller_rbac
+      tags:
+        - elbip
     - role: instance.prometheus_node_exporter
   tags:
     - controller
